@@ -117,11 +117,15 @@
             flex: 1;
         }
 
-        .profile-info h3 {
-            color: var(--text);
-            margin-bottom: 5px;
-            font-size: 1.2em;
-        }
+       .profile-info h3 {
+    color: var(--text);
+    margin-bottom: 5px;
+    font-size: 1.2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
 
         .profile-meta {
             display: flex;
@@ -137,9 +141,14 @@
         }
 
         .username {
-            color: var(--primary);
-            font-weight: 600;
-        }
+    color: var(--primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    display: inline-block;
+}
 
         /* Cards */
         .card {
