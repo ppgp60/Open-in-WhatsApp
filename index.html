@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open in WhatsApp - Without Saving Number</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #25D366;
+            --primary-dark: #128C7E;
+            --secondary: #667eea;
+            --accent: #764ba2;
+            --dark: #1a202c;
+            --dark-light: #2d3748;
+            --light: #f7fafc;
+            --gray: #a0aec0;
+            --card-bg: rgba(45, 55, 72, 0.95);
+            --card-bg-light: rgba(255, 255, 255, 0.95);
+            --text: #e2e8f0;
+            --text-dark: #2d3748;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-light: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] {
+            --card-bg: var(--card-bg-light);
+            --text: var(--text-dark);
+            --shadow: var(--shadow-light);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] body {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 15px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* User Profile Row */
+        .user-profile-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            color: var(--text);
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+
+        .profile-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .phone-input, .message-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid transparent;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .phone-input:focus, .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .message-input {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.8em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* Send Button with Loading */
+        .send-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .send-btn.loading .btn-text {
+            visibility: hidden;
+        }
+
+        .send-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* History Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--text);
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .reload-btn {
+            background: rgba(37, 211, 102, 0.1);
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .reload-btn.rotating i {
+            animation: rotate 1s linear infinite;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-number {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(37, 211, 102, 0.2);
+        }
+
+        .history-date {
+            font-size: 0.8em;
+            color: var(--gray);
+        }
+
+        .detail-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            color: var(--text);
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            font-size: 1.3em;
+            color: var(--text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .help-step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .help-step h4 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .help-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .help-btn.admin {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .help-btn.group {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+        }
+
+        .help-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* History Detail Modal */
+        .history-detail {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 80px;
+        }
+
+        .detail-value {
+            flex: 1;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.copy {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .action-btn.whatsapp {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 90%;
+            text-align: center;
+            font-weight: 500;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Telegram Badge */
+        .telegram-badge {
+            background: #0088cc;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="container">
+        <!-- Header Controls -->
+        <div class="header-controls">
+            <!-- Language Selector -->
+            <select id="languageSelect" class="control-btn">
+                <option value="bn">বাংলা</option>
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ar">العربية</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+            </select>
+            
+            <!-- Theme Toggle -->
+            <button class="control-btn" onclick="app.toggleTheme()">
+                <i class="fas fa-palette"></i>
+                থিম
+            </button>
+            
+            <!-- Help -->
+            <button class="control-btn" onclick="app.showHelpModal()">
+                <i class="fas fa-question-circle"></i>
+                হেল্প
+            </button>
+        </div>
+
+        <!-- User Profile Row -->
+        <div class="user-profile-row">
+            <img id="userPhoto" src="" alt="Profile" class="profile-photo">
+            <div class="profile-info">
+                <h3 id="userName">লোড হচ্ছে... <span id="telegramBadge" class="telegram-badge" style="display: none;">Telegram</span></h3>
+                <div class="profile-meta">
+                    <div class="profile-stat">
+                        <i class="fas fa-history"></i>
+                        <span id="historyCount">0 মেসেজ</span>
+                    </div>
+                    <div class="profile-stat">
+                        <i class="fas fa-user"></i>
+                        <span id="userStatus">অনলাইন</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone Input Section -->
+        <div class="card">
+            <div class="input-group">
+                <label class="input-label">ফোন নাম্বার</label>
+                <input 
+                    type="tel" 
+                    id="phoneNumber" 
+                    placeholder="8801853666771 বা +8801853666771" 
+                    class="phone-input"
+                >
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">মেসেজ (ঐচ্ছিক)</label>
+                <textarea 
+                    id="message" 
+                    placeholder="আপনার মেসেজ এখানে লিখুন..." 
+                    class="message-input"
+                    rows="4"
+                ></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span>/1000 ক্যারেক্টার
+                </div>
+            </div>
+
+            <button id="sendButton" class="send-btn">
+                <span class="btn-text">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp এ মেসেজ করুন
+                </span>
+            </button>
+        </div>
+
+        <!-- History Section -->
+        <div class="card">
+            <div class="section-header">
+                <h3 class="section-title">মেসেজ হিস্টোরি</h3>
+                <button id="reloadBtn" class="reload-btn" title="রিলোড">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <p>কোনো মেসেজ হিস্টোরি নেই</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">হেল্প গাইড</h3>
+                <button class="close-btn" onclick="app.closeModal('helpModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-content">
+                    <div class="help-step">
+                        <h4><i class="fas fa-mobile-alt"></i> ধাপ ১: ফোন নাম্বার দিন</h4>
+                        <p>কান্ট্রি কোড সহ বা ছাড়া নাম্বার লিখুন। সিস্টেম অটোমেটিকভাবে + যোগ করবে।</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fas fa-comment"></i> ধাপ ২: মেসেজ লিখুন (ঐচ্ছিক)</h4>
+                        <p>আপনার মেসেজ টেক্সট বক্সে লিখুন। এটি সম্পূর্ণ ঐচ্ছিক, আপনি খালিও রাখতে পারেন।</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fab fa-whatsapp"></i> ধাপ ৩: WhatsApp এ ওপেন করুন</h4>
+                        <p>"WhatsApp এ মেসেজ করুন" বাটনে ক্লিক করুন। এটি স্বয়ংক্রিয়ভাবে WhatsApp ওপেন করবে।</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fas fa-history"></i> ধাপ ৪: হিস্টোরি চেক করুন</h4>
+                        <p>আপনার সকল মেসেজের হিস্টোরি দেখতে হিস্টোরি সেকশন ব্যবহার করুন।</p>
+                    </div>
+                </div>
+
+                <!-- Help Buttons -->
+                <div class="help-buttons">
+                    <a href="https://t.me/admin_username" class="help-btn admin" target="_blank">
+                        <i class="fas fa-headset"></i>
+                        Admin Chat
+                    </a>
+                    <a href="https://t.me/group_link" class="help-btn group" target="_blank">
+                        <i class="fas fa-users"></i>
+                        Join Group
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Detail Modal -->
+    <div id="historyDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">মেসেজ বিস্তারিত</h3>
+                <button class="close-btn" onclick="app.closeModal('historyDetailModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="history-detail">
+                    <div class="detail-row">
+                        <span class="detail-label">নাম্বার:</span>
+                        <span class="detail-value" id="detailNumber"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">তারিখ:</span>
+                        <span class="detail-value" id="detailDate"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">মেসেজ:</span>
+                        <span class="detail-value" id="detailMessage"></span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn copy" onclick="app.copyNumber()">
+                        <i class="fas fa-copy"></i>
+                        নাম্বার কপি করুন
+                    </button>
+                    <button class="action-btn whatsapp" onclick="app.openWhatsAppFromDetail()">
+                        <i class="fab fa-whatsapp"></i>
+                        WhatsApp এ ওপেন করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKsRo1d6VSlyeKWIviZmA10yMoUqUp8gA",
+            authDomain: "open-in-whatsapp-6cb3e.firebaseapp.com",
+            databaseURL: "https://open-in-whatsapp-6cb3e-default-rtdb.firebaseio.com",
+            projectId: "open-in-whatsapp-6cb3e",
+            storageBucket: "open-in-whatsapp-6cb3e.firebasestorage.app",
+            messagingSenderId: "337423714949",
+            appId: "1:337423714949:web:edab04576c0157859af7ec"
+        };
+
+        // WhatsApp Opener Application - UPDATED VERSION
+        class WhatsAppOpener {
+            constructor() {
+                this.tg = null;
+                this.currentUser = null;
+                this.userHistory = [];
+                this.currentLanguage = 'bn';
+                this.selectedHistoryItem = null;
+                this.init();
+            }
+
+            async init() {
+                console.log('🚀 Initializing WhatsApp Opener...');
+                
+                // Initialize Telegram Web App First
+                await this.initializeTelegram();
+                
+                // Then initialize other components
+                this.bindEvents();
+                this.loadSettings();
+                this.loadUserHistory();
+                this.renderHistory();
+                
+                console.log('✅ App initialization completed');
+            }
+
+            // Telegram Web App Initialization
+            async initializeTelegram() {
+                return new Promise((resolve) => {
+                    // Check for Telegram Web App SDK
+                    if (window.Telegram && Telegram.WebApp) {
+                        this.tg = Telegram.WebApp;
+                        console.log('📱 Telegram WebApp SDK detected');
+                    } else {
+                        console.log('❌ Telegram WebApp SDK not found');
+                        this.setDefaultUser();
+                        resolve();
+                        return;
+                    }
+
+                    try {
+                        // Initialize Telegram WebApp
+                        this.tg.ready();
+                        this.tg.expand();
+                        
+                        // Get user data from Telegram
+                        const user = this.tg.initDataUnsafe?.user;
+                        
+                        if (user && user.id) {
+                            this.currentUser = {
+                                id: user.id.toString(),
+                                firstName: user.first_name || 'User',
+                                lastName: user.last_name || '',
+                                username: user.username || '',
+                                photoUrl: user.photo_url || '',
+                                languageCode: user.language_code || 'en',
+                                isPremium: user.is_premium || false,
+                                isTelegramUser: true
+                            };
+                            
+                            console.log('✅ Telegram user authenticated:', this.currentUser);
+                            this.showTelegramBadge();
+                        } else {
+                            console.log('⚠️ No Telegram user data found');
+                            this.setDefaultUser();
+                        }
+                        
+                        this.updateUserProfile();
+                        resolve();
+                        
+                    } catch (error) {
+                        console.error('❌ Telegram initialization error:', error);
+                        this.setDefaultUser();
+                        resolve();
+                    }
+                });
+            }
+
+            // Show Telegram badge
+            showTelegramBadge() {
+                const badge = document.getElementById('telegramBadge');
+                if (badge && this.currentUser?.isTelegramUser) {
+                    badge.style.display = 'inline-block';
+                }
+            }
+
+            setDefaultUser() {
+                this.currentUser = {
+                    id: 'web_user_' + Date.now(),
+                    firstName: 'ইউজার',
+                    lastName: '',
+                    username: '',
+                    photoUrl: '',
+                    languageCode: 'bn',
+                    isPremium: false,
+                    isTelegramUser: false
+                };
+                console.log('👤 Default user set');
+            }
+
+            // Load User History from Local Storage - UPDATED
+            loadUserHistory() {
+                if (!this.currentUser) {
+                    console.log('❌ Cannot load history: No user');
+                    this.userHistory = [];
+                    return;
+                }
+
+                try {
+                    const key = `whatsappHistory_${this.currentUser.id}`;
+                    const storedHistory = localStorage.getItem(key);
+                    
+                    if (storedHistory) {
+                        this.userHistory = JSON.parse(storedHistory);
+                        console.log('✅ User history loaded from Local Storage:', this.userHistory.length, 'items');
+                    } else {
+                        this.userHistory = [];
+                        console.log('✅ No history found in Local Storage');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading history from Local Storage:', error);
+                    this.userHistory = [];
+                }
+            }
+
+            // Save User History to Local Storage - UPDATED
+            saveUserHistory() {
+                if (!this.currentUser) return;
+                
+                try {
+                    const key = `whatsappHistory_${this.currentUser.id}`;
+                    localStorage.setItem(key, JSON.stringify(this.userHistory));
+                    console.log('✅ User history saved to Local Storage');
+                } catch (error) {
+                    console.error('❌ Error saving history to Local Storage:', error);
+                }
+            }
+
+            // ইউজার প্রোফাইল আপডেট
+            updateUserProfile() {
+                if (!this.currentUser) {
+                    console.log('❌ No current user to update profile');
+                    return;
+                }
+                
+                console.log('🔄 Updating user profile:', this.currentUser);
+                
+                const name = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
+                document.getElementById('userName').textContent = name;
+                
+                const userPhoto = document.getElementById('userPhoto');
+                const userStatus = document.getElementById('userStatus');
+                
+                // Set profile photo
+                if (this.currentUser.photoUrl && this.currentUser.isTelegramUser) {
+                    userPhoto.src = this.currentUser.photoUrl;
+                    userPhoto.onerror = () => {
+                        this.setDefaultProfilePhoto();
+                    };
+                } else {
+                    this.setDefaultProfilePhoto();
+                }
+                
+                // Update user status
+                if (this.currentUser.isTelegramUser) {
+                    userStatus.textContent = 'টেলিগ্রাম ইউজার';
+                    userStatus.style.color = '#0088cc';
+                } else {
+                    userStatus.textContent = 'ওয়েব ইউজার';
+                    userStatus.style.color = '#25D366';
+                }
+                
+                this.updateHistoryCount();
+                console.log('✅ User profile updated successfully');
+            }
+
+            setDefaultProfilePhoto() {
+                const userPhoto = document.getElementById('userPhoto');
+                const userName = this.currentUser.firstName;
+                userPhoto.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=25D366&color=ffffff&bold=true&size=100`;
+            }
+
+            // Event Binding
+            bindEvents() {
+                // Send Button
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                // Phone Input - Auto add +
+                document.getElementById('phoneNumber').addEventListener('input', (e) => {
+                    this.autoAddPlus(e.target);
+                });
+
+                // Enter key support
+                document.getElementById('phoneNumber').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+
+                // Character count
+                document.getElementById('message').addEventListener('input', (e) => {
+                    this.updateCharCount(e.target.value.length);
+                });
+
+                // Language change
+                document.getElementById('languageSelect').addEventListener('change', (e) => {
+                    this.changeLanguage(e.target.value, true);
+                });
+
+                // Reload Button
+                document.getElementById('reloadBtn').addEventListener('click', () => {
+                    this.reloadHistory();
+                });
+            }
+
+            // Auto add + to phone number
+            autoAddPlus(input) {
+                let value = input.value.replace(/[^\d+]/g, '');
+                
+                if (!value.startsWith('+')) {
+                    value = '+' + value;
+                }
+                
+                input.value = value;
+            }
+
+            // Send Message - UPDATED with exact WhatsApp API URL
+            async sendMessage() {
+                let phoneInput = document.getElementById('phoneNumber').value.trim();
+                const message = document.getElementById('message').value.trim();
+                const sendBtn = document.getElementById('sendButton');
+
+                // Auto add + if missing
+                if (!phoneInput.startsWith('+')) {
+                    phoneInput = '+' + phoneInput;
+                    document.getElementById('phoneNumber').value = phoneInput;
+                }
+
+                // Validation
+                if (!phoneInput || phoneInput === '+') {
+                    this.showError('দয়া করে ফোন নাম্বার দিন');
+                    return;
+                }
+
+                const digitsOnly = phoneInput.slice(1).replace(/\D/g, '');
+                if (digitsOnly.length < 8) {
+                    this.showError('দয়া করে সঠিক ফোন নাম্বার দিন (ন্যূনতম ৮ ডিজিট)');
+                    return;
+                }
+
+                // WhatsApp URL তৈরি - EXACT FORMAT
+                let whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneInput}`;
+                if (message) {
+                    whatsappUrl += `&text=${encodeURIComponent(message)}`;
+                }
+
+                // বাটনে লোডিং শুরু
+                sendBtn.classList.add('loading');
+
+                try {
+                    // Save to history first
+                    await this.saveToHistory({
+                        phoneNumber: phoneInput,
+                        message: message
+                    });
+                    
+                    // Then open WhatsApp in new tab
+                    window.open(whatsappUrl, '_blank');
+                    
+                    // ফর্ম রিসেট
+                    setTimeout(() => {
+                        document.getElementById('phoneNumber').value = '';
+                        document.getElementById('message').value = '';
+                        this.updateCharCount(0);
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.showError('WhatsApp ওপেন করতে সমস্যা হয়েছে');
+                } finally {
+                    // লোডিং বন্ধ
+                    setTimeout(() => {
+                        sendBtn.classList.remove('loading');
+                    }, 1000);
+                }
+            }
+
+            // Save to History - UPDATED
+            async saveToHistory(data) {
+                const historyItem = {
+                    id: Date.now(),
+                    ...data,
+                    timestamp: new Date().toISOString(),
+                    userId: this.currentUser.id
+                };
+
+                this.userHistory.unshift(historyItem);
+                
+                // Save to local storage only
+                this.saveUserHistory();
+                
+                this.renderHistory();
+                this.updateHistoryCount();
+                
+                console.log('✅ Message saved to history');
+            }
+
+            // হিস্ট্রি রেন্ডার - UPDATED with copy button and English date
+            renderHistory() {
+                const historyList = document.getElementById('historyList');
+                
+                if (this.userHistory.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>কোনো মেসেজ হিস্টোরি নেই</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = this.userHistory.map((item, index) => `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-number">
+                                ${item.phoneNumber}
+                                <button class="copy-btn" onclick="app.copyPhoneNumber('${item.phoneNumber}')" title="কপি করুন">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="history-date">${this.formatDateEnglish(item.timestamp)}</div>
+                            ${item.message ? `<div style="font-size: 0.8em; color: var(--gray); margin-top: 5px;">${item.message.substring(0, 50)}${item.message.length > 50 ? '...' : ''}</div>` : ''}
+                        </div>
+                        <button class="detail-btn" onclick="app.showHistoryDetail(${index})">
+                            <i class="fas fa-eye"></i>
+                            বিস্তারিত
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // তারিখ ফরম্যাট - English
+            formatDateEnglish(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // Show History Detail Modal - UPDATED with stylish design
+            showHistoryDetail(index) {
+                const item = this.userHistory[index];
+                this.selectedHistoryItem = item;
+                
+                document.getElementById('detailNumber').textContent = item.phoneNumber;
+                document.getElementById('detailDate').textContent = this.formatDateEnglish(item.timestamp);
+                document.getElementById('detailMessage').textContent = item.message || 'No message';
+                
+                this.showModal('historyDetailModal');
+            }
+
+            // Copy phone number from detail modal
+            copyNumber() {
+                if (this.selectedHistoryItem) {
+                    this.copyToClipboard(this.selectedHistoryItem.phoneNumber);
+                    this.showToast('নাম্বার কপি করা হয়েছে!');
+                }
+            }
+
+            // Copy phone number from history list
+            copyPhoneNumber(phoneNumber) {
+                this.copyToClipboard(phoneNumber);
+                this.showToast('নাম্বার কপি করা হয়েছে!');
+            }
+
+            // Open WhatsApp from detail modal
+            openWhatsAppFromDetail() {
+                if (this.selectedHistoryItem) {
+                    let whatsappUrl = `https://api.whatsapp.com/send?phone=${this.selectedHistoryItem.phoneNumber}`;
+                    if (this.selectedHistoryItem.message) {
+                        whatsappUrl += `&text=${encodeURIComponent(this.selectedHistoryItem.message)}`;
+                    }
+                    window.open(whatsappUrl, '_blank');
+                    this.closeModal('historyDetailModal');
+                }
+            }
+
+            // Copy to clipboard utility
+            copyToClipboard(text) {
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Copy failed:', err);
+                    // Fallback method
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                });
+            }
+
+            // Show modal
+            showModal(modalId) {
+                document.getElementById(modalId).style.display = 'flex';
+            }
+
+            // Close modal
+            closeModal(modalId) {
+                document.getElementById(modalId).style.display = 'none';
+            }
+
+            // হিস্ট্রি কাউন্ট আপডেট
+            updateHistoryCount() {
+                document.getElementById('historyCount').textContent = this.userHistory.length + ' মেসেজ';
+            }
+
+            // রিলোড হিস্ট্রি
+            async reloadHistory() {
+                const reloadBtn = document.getElementById('reloadBtn');
+                reloadBtn.classList.add('rotating');
+                
+                this.loadUserHistory();
+                this.renderHistory();
+                
+                setTimeout(() => {
+                    reloadBtn.classList.remove('rotating');
+                    this.showToast('হিস্টোরি রিফ্রেশ করা হয়েছে');
+                }, 500);
+            }
+
+            // বাকি মেথডগুলো আগের মতোই থাকবে
+            changeLanguage(lang, showToast = true) {
+                localStorage.setItem('appLanguage', lang);
+                this.updateContentByLanguage(lang);
+                
+                if (showToast) {
+                    const messages = {
+                        'bn': 'ভাষা পরিবর্তন করা হয়েছে: বাংলা',
+                        'en': 'Language changed: English', 
+                        'hi': 'भाषा बदली गई: हिन्दी',
+                        'ar': 'تم تغيير اللغة: العربية',
+                        'es': 'Idioma cambiado: Español',
+                        'fr': 'Langue changée: Français'
+                    };
+                    this.showToast(messages[lang] || 'Language changed');
+                }
+            }
+
+            updateContentByLanguage(lang) {
+                const translations = {
+                    'bn': {
+                        theme: 'থিম',
+                        help: 'হেল্প',
+                        phonePlaceholder: '8801853666771 বা +8801853666771',
+                        messagePlaceholder: 'আপনার মেসেজ এখানে লিখুন...',
+                        sendButton: 'WhatsApp এ মেসেজ করুন',
+                        historyTitle: 'মেসেজ হিস্টোরি',
+                        online: 'অনলাইন',
+                        messages: 'মেসেজ'
+                    },
+                    'en': {
+                        theme: 'Theme',
+                        help: 'Help',
+                        phonePlaceholder: '8801853666771 or +8801853666771',
+                        messagePlaceholder: 'Type your message here...',
+                        sendButton: 'Open in WhatsApp',
+                        historyTitle: 'Message History',
+                        online: 'Online',
+                        messages: 'Messages'
+                    }
+                };
+
+                const t = translations[lang] || translations['bn'];
+                
+                document.querySelector('.control-btn:nth-child(2)').innerHTML = `<i class="fas fa-palette"></i>${t.theme}`;
+                document.querySelector('.control-btn:nth-child(3)').innerHTML = `<i class="fas fa-question-circle"></i>${t.help}`;
+                document.getElementById('phoneNumber').placeholder = t.phonePlaceholder;
+                document.getElementById('message').placeholder = t.messagePlaceholder;
+                document.querySelector('.btn-text').innerHTML = `<i class="fab fa-whatsapp"></i>${t.sendButton}`;
+                document.querySelector('.section-title').textContent = t.historyTitle;
+                document.getElementById('userStatus').textContent = t.online;
+                document.getElementById('historyCount').textContent = this.userHistory.length + ' ' + t.messages;
+            }
+
+            toggleTheme() {
+                const currentTheme = document.body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('appTheme', newTheme);
+                this.showToast(newTheme === 'light');
+            }
+
+            showHelpModal() {
+                this.showModal('helpModal');
+            }
+
+            updateCharCount(count) {
+                document.getElementById('charCount').textContent = count;
+            }
+
+            showError(message) {
+                alert(message);
+            }
+
+            showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            loadSettings() {
+                const savedLanguage = localStorage.getItem('appLanguage') || 'bn';
+                document.getElementById('languageSelect').value = savedLanguage;
+                this.changeLanguage(savedLanguage, false);
+
+                const savedTheme = localStorage.getItem('appTheme') || 'dark';
+                document.body.setAttribute('data-theme', savedTheme);
+            }
+        }
+
+        // App শুরু
+        const app = new WhatsAppOpener();
+
+        // Modal বাইরে ক্লিক করলে বন্ধ হওয়া
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    app.closeModal(modal.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
