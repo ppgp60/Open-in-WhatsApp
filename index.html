@@ -136,6 +136,11 @@
             gap: 5px;
         }
 
+        .username {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         /* Cards */
         .card {
             background: var(--card-bg);
@@ -577,38 +582,9 @@
             font-size: 0.7em;
             font-weight: 600;
         }
-
-        /* Firebase Status */
-        .firebase-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: var(--card-bg);
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.7em;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-connected {
-            color: var(--primary);
-        }
-
-        .status-disconnected {
-            color: var(--gray);
-        }
     </style>
 </head>
 <body data-theme="dark">
-    <!-- Firebase Status Indicator -->
-    <div id="firebaseStatus" class="firebase-status status-disconnected">
-        <i class="fas fa-circle"></i>
-        <span>Firebase: Disconnected</span>
-    </div>
-
     <div class="container">
         <!-- Header Controls -->
         <div class="header-controls">
@@ -642,11 +618,11 @@
                 <h3 id="userName">লোড হচ্ছে... <span id="telegramBadge" class="telegram-badge" style="display: none;">Telegram</span></h3>
                 <div class="profile-meta">
                     <div class="profile-stat">
-                        <i class="fas fa-history"></i>
-                        <span id="historyCount">0 মেসেজ</span>
+                        <i class="fas fa-user"></i>
+                        <span id="userUsername" class="username">@username</span>
                     </div>
                     <div class="profile-stat">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-circle"></i>
                         <span id="userStatus">অনলাইন</span>
                     </div>
                 </div>
@@ -672,7 +648,7 @@
                     placeholder="আপনার মেসেজ এখানে লিখুন..." 
                     class="message-input"
                     rows="4"
-                ></textarea>
+                >Hi! 🤗😍</textarea>
                 <div class="char-count">
                     <span id="charCount">0</span>/1000 ক্যারেক্টার
                 </div>
@@ -812,24 +788,9 @@
                 try {
                     firebase.initializeApp(firebaseConfig);
                     this.db = firebase.firestore();
-                    console.log('✅ Firebase initialized successfully');
-                    this.updateFirebaseStatus();
+                    console.log('✅ F initialized successfully');
                 } catch (error) {
                     console.error('❌ Firebase initialization error:', error);
-                }
-            }
-
-            // Update Firebase connection status UI
-            updateFirebaseStatus() {
-                const statusElement = document.getElementById('firebaseStatus');
-                if (statusElement) {
-                    if (this.isConnected) {
-                        statusElement.className = 'firebase-status status-connected';
-                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Firebase: Connected</span>';
-                    } else {
-                        statusElement.className = 'firebase-status status-disconnected';
-                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Firebase: Disconnected</span>';
-                    }
                 }
             }
 
@@ -840,7 +801,6 @@
                 try {
                     await this.db.enableNetwork();
                     this.isConnected = true;
-                    this.updateFirebaseStatus();
                     console.log('🔗 Firebase connected');
                 } catch (error) {
                     console.error('❌ Firebase connection error:', error);
@@ -853,7 +813,6 @@
                 try {
                     await this.db.disableNetwork();
                     this.isConnected = false;
-                    this.updateFirebaseStatus();
                     console.log('🔌 Firebase disconnected');
                 } catch (error) {
                     console.error('❌ Firebase disconnection error:', error);
@@ -888,7 +847,7 @@
                             updateCount: firebase.firestore.FieldValue.increment(1),
                             messageCount: userData.messageCount || 0
                         });
-                        console.log('✅ User updated in Firebase');
+                        console.log('✅ User updated in F');
                     } else {
                         // Create new user
                         await userRef.set({
@@ -898,7 +857,7 @@
                             updateCount: 0,
                             messageCount: userData.messageCount || 0
                         });
-                        console.log('✅ New user created in Firebase');
+                        console.log('✅ New user created in F');
                     }
                     return true;
 
@@ -1017,9 +976,9 @@
                 try {
                     const success = await this.firebaseManager.syncUser(this.currentUser);
                     if (success) {
-                        console.log('✅ User synchronized with Firebase');
+                        console.log('✅ User synchronized with F');
                     } else {
-                        console.log('⚠️ User sync with Firebase failed');
+                        console.log('⚠️ User sync with F failed');
                     }
                 } catch (error) {
                     console.error('❌ User sync error:', error);
@@ -1039,7 +998,7 @@
                     id: 'web_user_' + Date.now(),
                     firstName: 'ইউজার',
                     lastName: '',
-                    username: '',
+                    username: 'web_user',
                     photoUrl: '',
                     languageCode: 'bn',
                     isPremium: false,
@@ -1049,7 +1008,7 @@
                 console.log('👤 Default user set');
             }
 
-            // Load User History from Local Storage - FIXED
+            // Load User History from Local Storage
             loadUserHistory() {
                 if (!this.currentUser) {
                     console.log('❌ Cannot load history: No user');
@@ -1080,7 +1039,7 @@
                 }
             }
 
-            // Save User History to Local Storage - FIXED
+            // Save User History to Local Storage
             saveUserHistory() {
                 if (!this.currentUser) return;
                 
@@ -1097,7 +1056,7 @@
                 }
             }
 
-            // ইউজার প্রোফাইল আপডেট - FIXED
+            // ইউজার প্রোফাইল আপডেট - UPDATED with username
             updateUserProfile() {
                 if (!this.currentUser) {
                     console.log('❌ No current user to update profile');
@@ -1108,6 +1067,14 @@
                 
                 const name = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
                 document.getElementById('userName').textContent = name;
+                
+                // Show username
+                const usernameElement = document.getElementById('userUsername');
+                if (this.currentUser.username) {
+                    usernameElement.textContent = '@' + this.currentUser.username;
+                } else {
+                    usernameElement.textContent = this.currentUser.isTelegramUser ? '@telegram_user' : '@web_user';
+                }
                 
                 const userPhoto = document.getElementById('userPhoto');
                 const userStatus = document.getElementById('userStatus');
@@ -1131,7 +1098,6 @@
                     userStatus.style.color = '#25D366';
                 }
                 
-                this.updateHistoryCount();
                 console.log('✅ User profile updated successfully');
             }
 
@@ -1185,7 +1151,7 @@
                 input.value = value;
             }
 
-            // Send Message - UPDATED with exact WhatsApp API URL
+            // Send Message
             async sendMessage() {
                 let phoneInput = document.getElementById('phoneNumber').value.trim();
                 const message = document.getElementById('message').value.trim();
@@ -1209,7 +1175,7 @@
                     return;
                 }
 
-                // WhatsApp URL তৈরি - EXACT FORMAT
+                // WhatsApp URL তৈরি
                 let whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneInput}`;
                 if (message) {
                     whatsappUrl += `&text=${encodeURIComponent(message)}`;
@@ -1249,7 +1215,7 @@
                 }
             }
 
-            // Save to History - UPDATED
+            // Save to History
             async saveToHistory(data) {
                 const historyItem = {
                     id: Date.now(),
@@ -1260,16 +1226,15 @@
 
                 this.userHistory.unshift(historyItem);
                 
-                // Save to local storage only
+                // Save to local storage
                 this.saveUserHistory();
                 
                 this.renderHistory();
-                this.updateHistoryCount();
                 
                 console.log('✅ Message saved to history');
             }
 
-            // হিস্ট্রি রেন্ডার - UPDATED with copy button and English date
+            // হিস্ট্রি রেন্ডার
             renderHistory() {
                 const historyList = document.getElementById('historyList');
                 
@@ -1297,7 +1262,7 @@
                         </div>
                         <button class="detail-btn" onclick="app.showHistoryDetail(${index})">
                             <i class="fas fa-eye"></i>
-                            বিস্তারিত
+                           <!-- বিস্তারিত -->
                         </button>
                     </div>
                 `).join('');
@@ -1315,7 +1280,7 @@
                 });
             }
 
-            // Show History Detail Modal - UPDATED with stylish design
+            // Show History Detail Modal
             showHistoryDetail(index) {
                 const item = this.userHistory[index];
                 this.selectedHistoryItem = item;
@@ -1377,17 +1342,6 @@
                 document.getElementById(modalId).style.display = 'none';
             }
 
-            // হিস্ট্রি কাউন্ট আপডেট - FIXED
-            updateHistoryCount() {
-                const count = this.userHistory.length;
-                document.getElementById('historyCount').textContent = count + ' মেসেজ';
-                
-                // Update user message count
-                if (this.currentUser) {
-                    this.currentUser.messageCount = count;
-                }
-            }
-
             // রিলোড হিস্ট্রি
             async reloadHistory() {
                 const reloadBtn = document.getElementById('reloadBtn');
@@ -1402,7 +1356,7 @@
                 }, 500);
             }
 
-            // বাকি মেথডগুলো আগের মতোই থাকবে
+            // Language change
             changeLanguage(lang, showToast = true) {
                 localStorage.setItem('appLanguage', lang);
                 this.updateContentByLanguage(lang);
@@ -1429,8 +1383,7 @@
                         messagePlaceholder: 'আপনার মেসেজ এখানে লিখুন...',
                         sendButton: 'WhatsApp এ মেসেজ করুন',
                         historyTitle: 'মেসেজ হিস্টোরি',
-                        online: 'অনলাইন',
-                        messages: 'মেসেজ'
+                        online: 'অনলাইন'
                     },
                     'en': {
                         theme: 'Theme',
@@ -1439,8 +1392,7 @@
                         messagePlaceholder: 'Type your message here...',
                         sendButton: 'Open in WhatsApp',
                         historyTitle: 'Message History',
-                        online: 'Online',
-                        messages: 'Messages'
+                        online: 'Online'
                     }
                 };
 
@@ -1453,7 +1405,6 @@
                 document.querySelector('.btn-text').innerHTML = `<i class="fab fa-whatsapp"></i>${t.sendButton}`;
                 document.querySelector('.section-title').textContent = t.historyTitle;
                 document.getElementById('userStatus').textContent = t.online;
-                document.getElementById('historyCount').textContent = this.userHistory.length + ' ' + t.messages;
             }
 
             toggleTheme() {
