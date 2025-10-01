@@ -577,9 +577,38 @@
             font-size: 0.7em;
             font-weight: 600;
         }
+
+        /* Firebase Status */
+        .firebase-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-connected {
+            color: var(--primary);
+        }
+
+        .status-disconnected {
+            color: var(--gray);
+        }
     </style>
 </head>
 <body data-theme="dark">
+    <!-- Firebase Status Indicator -->
+    <div id="firebaseStatus" class="firebase-status status-disconnected">
+        <i class="fas fa-circle"></i>
+        <span>Firebase: Disconnected</span>
+    </div>
+
     <div class="container">
         <!-- Header Controls -->
         <div class="header-controls">
@@ -643,7 +672,7 @@
                     placeholder="আপনার মেসেজ এখানে লিখুন..." 
                     class="message-input"
                     rows="4"
-                >Hi! 🤗😍</textarea>
+                ></textarea>
                 <div class="char-count">
                     <span id="charCount">0</span>/1000 ক্যারেক্টার
                 </div>
@@ -762,14 +791,141 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyCKsRo1d6VSlyeKWIviZmA10yMoUqUp8gA",
-            authDomain: "open-in-whatsapp-6cb3e.firebaseapp.com",
-            databaseURL: "https://open-in-whatsapp-6cb3e-default-rtdb.firebaseio.com",
-            projectId: "open-in-whatsapp-6cb3e",
-            storageBucket: "open-in-whatsapp-6cb3e.firebasestorage.app",
-            messagingSenderId: "337423714949",
-            appId: "1:337423714949:web:edab04576c0157859af7ec"
-        };
+  apiKey: "AIzaSyA4jjO_jOiZ0W6ZMF9_SvMjC6T66BhFGhM",
+  authDomain: "open-in-whatsapp-df60.firebaseapp.com",
+  projectId: "open-in-whatsapp-df60",
+  storageBucket: "open-in-whatsapp-df60.firebasestorage.app",
+  messagingSenderId: "578345520361",
+  appId: "1:578345520361:web:26f54e173c8fb613af7478"
+};
+
+        // Firebase User Management System
+        class FirebaseUserManager {
+            constructor() {
+                this.db = null;
+                this.isConnected = false;
+                this.initFirebase();
+            }
+
+            // Firebase initialization
+            initFirebase() {
+                try {
+                    firebase.initializeApp(firebaseConfig);
+                    this.db = firebase.firestore();
+                    console.log('✅ Firebase initialized successfully');
+                    this.updateFirebaseStatus();
+                } catch (error) {
+                    console.error('❌ Firebase initialization error:', error);
+                }
+            }
+
+            // Update Firebase connection status UI
+            updateFirebaseStatus() {
+                const statusElement = document.getElementById('firebaseStatus');
+                if (statusElement) {
+                    if (this.isConnected) {
+                        statusElement.className = 'firebase-status status-connected';
+                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Firebase: Connected</span>';
+                    } else {
+                        statusElement.className = 'firebase-status status-disconnected';
+                        statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Firebase: Disconnected</span>';
+                    }
+                }
+            }
+
+            // Efficient connection management
+            async connect() {
+                if (this.isConnected) return;
+                
+                try {
+                    await this.db.enableNetwork();
+                    this.isConnected = true;
+                    this.updateFirebaseStatus();
+                    console.log('🔗 Firebase connected');
+                } catch (error) {
+                    console.error('❌ Firebase connection error:', error);
+                }
+            }
+
+            async disconnect() {
+                if (!this.isConnected) return;
+                
+                try {
+                    await this.db.disableNetwork();
+                    this.isConnected = false;
+                    this.updateFirebaseStatus();
+                    console.log('🔌 Firebase disconnected');
+                } catch (error) {
+                    console.error('❌ Firebase disconnection error:', error);
+                }
+            }
+
+            // User synchronization with efficient connection handling
+            async syncUser(userData) {
+                if (!userData || !userData.id) {
+                    console.error('❌ Invalid user data for sync');
+                    return false;
+                }
+
+                // Connect only when needed
+                await this.connect();
+
+                try {
+                    const userRef = this.db.collection('users').doc(userData.id);
+                    const userDoc = await userRef.get();
+
+                    if (userDoc.exists) {
+                        // Update existing user
+                        await userRef.update({
+                            firstName: userData.firstName,
+                            lastName: userData.lastName,
+                            username: userData.username,
+                            photoUrl: userData.photoUrl,
+                            languageCode: userData.languageCode,
+                            isPremium: userData.isPremium,
+                            isTelegramUser: userData.isTelegramUser,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            updateCount: firebase.firestore.FieldValue.increment(1),
+                            messageCount: userData.messageCount || 0
+                        });
+                        console.log('✅ User updated in Firebase');
+                    } else {
+                        // Create new user
+                        await userRef.set({
+                            ...userData,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            updateCount: 0,
+                            messageCount: userData.messageCount || 0
+                        });
+                        console.log('✅ New user created in Firebase');
+                    }
+                    return true;
+
+                } catch (error) {
+                    console.error('❌ User sync error:', error);
+                    return false;
+                } finally {
+                    // Immediately disconnect after operation
+                    setTimeout(() => this.disconnect(), 1000);
+                }
+            }
+
+            // Get user data from Firebase
+            async getUser(userId) {
+                await this.connect();
+                
+                try {
+                    const userDoc = await this.db.collection('users').doc(userId).get();
+                    return userDoc.exists ? userDoc.data() : null;
+                } catch (error) {
+                    console.error('❌ Get user error:', error);
+                    return null;
+                } finally {
+                    setTimeout(() => this.disconnect(), 500);
+                }
+            }
+        }
 
         // WhatsApp Opener Application - UPDATED VERSION
         class WhatsAppOpener {
@@ -779,6 +935,7 @@
                 this.userHistory = [];
                 this.currentLanguage = 'bn';
                 this.selectedHistoryItem = null;
+                this.firebaseManager = new FirebaseUserManager();
                 this.init();
             }
 
@@ -828,11 +985,15 @@
                                 photoUrl: user.photo_url || '',
                                 languageCode: user.language_code || 'en',
                                 isPremium: user.is_premium || false,
-                                isTelegramUser: true
+                                isTelegramUser: true,
+                                messageCount: this.userHistory.length
                             };
                             
                             console.log('✅ Telegram user authenticated:', this.currentUser);
                             this.showTelegramBadge();
+                            
+                            // Sync user with Firebase
+                            this.syncUserWithFirebase();
                         } else {
                             console.log('⚠️ No Telegram user data found');
                             this.setDefaultUser();
@@ -847,6 +1008,22 @@
                         resolve();
                     }
                 });
+            }
+
+            // Sync user with Firebase
+            async syncUserWithFirebase() {
+                if (!this.currentUser) return;
+                
+                try {
+                    const success = await this.firebaseManager.syncUser(this.currentUser);
+                    if (success) {
+                        console.log('✅ User synchronized with Firebase');
+                    } else {
+                        console.log('⚠️ User sync with Firebase failed');
+                    }
+                } catch (error) {
+                    console.error('❌ User sync error:', error);
+                }
             }
 
             // Show Telegram badge
@@ -866,12 +1043,13 @@
                     photoUrl: '',
                     languageCode: 'bn',
                     isPremium: false,
-                    isTelegramUser: false
+                    isTelegramUser: false,
+                    messageCount: this.userHistory.length
                 };
                 console.log('👤 Default user set');
             }
 
-            // Load User History from Local Storage - UPDATED
+            // Load User History from Local Storage - FIXED
             loadUserHistory() {
                 if (!this.currentUser) {
                     console.log('❌ Cannot load history: No user');
@@ -890,26 +1068,36 @@
                         this.userHistory = [];
                         console.log('✅ No history found in Local Storage');
                     }
+                    
+                    // Update user message count
+                    if (this.currentUser) {
+                        this.currentUser.messageCount = this.userHistory.length;
+                    }
+                    
                 } catch (error) {
                     console.error('❌ Error loading history from Local Storage:', error);
                     this.userHistory = [];
                 }
             }
 
-            // Save User History to Local Storage - UPDATED
+            // Save User History to Local Storage - FIXED
             saveUserHistory() {
                 if (!this.currentUser) return;
                 
                 try {
                     const key = `whatsappHistory_${this.currentUser.id}`;
                     localStorage.setItem(key, JSON.stringify(this.userHistory));
+                    
+                    // Update user message count
+                    this.currentUser.messageCount = this.userHistory.length;
+                    
                     console.log('✅ User history saved to Local Storage');
                 } catch (error) {
                     console.error('❌ Error saving history to Local Storage:', error);
                 }
             }
 
-            // ইউজার প্রোফাইল আপডেট
+            // ইউজার প্রোফাইল আপডেট - FIXED
             updateUserProfile() {
                 if (!this.currentUser) {
                     console.log('❌ No current user to update profile');
@@ -1040,6 +1228,9 @@
                     // Then open WhatsApp in new tab
                     window.open(whatsappUrl, '_blank');
                     
+                    // Sync user with Firebase after sending message
+                    this.syncUserWithFirebase();
+                    
                     // ফর্ম রিসেট
                     setTimeout(() => {
                         document.getElementById('phoneNumber').value = '';
@@ -1106,7 +1297,7 @@
                         </div>
                         <button class="detail-btn" onclick="app.showHistoryDetail(${index})">
                             <i class="fas fa-eye"></i>
-                            <!-- বিস্তারিত -->
+                            বিস্তারিত
                         </button>
                     </div>
                 `).join('');
@@ -1186,9 +1377,15 @@
                 document.getElementById(modalId).style.display = 'none';
             }
 
-            // হিস্ট্রি কাউন্ট আপডেট
+            // হিস্ট্রি কাউন্ট আপডেট - FIXED
             updateHistoryCount() {
-                document.getElementById('historyCount').textContent = this.userHistory.length + ' মেসেজ';
+                const count = this.userHistory.length;
+                document.getElementById('historyCount').textContent = count + ' মেসেজ';
+                
+                // Update user message count
+                if (this.currentUser) {
+                    this.currentUser.messageCount = count;
+                }
             }
 
             // রিলোড হিস্ট্রি
