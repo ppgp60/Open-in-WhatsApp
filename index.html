@@ -15,6 +15,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <style>
         :root {
             --primary: #25D366;
@@ -839,11 +842,6 @@
         .input-with-icon input {
             padding-left: 45px;
         }
-
-        /* Telegram WebApp Fix */
-        .telegram-webapp {
-            display: none;
-        }
     </style>
 </head>
 <body data-theme="dark">
@@ -897,6 +895,14 @@
                     <div class="language-option" data-lang="ru" onclick="app.selectLanguage('ru')">
                         <span>🇷🇺</span>
                         <span>Русский</span>
+                    </div>
+                    <div class="language-option" data-lang="pt" onclick="app.selectLanguage('pt')">
+                        <span>🇵🇹</span>
+                        <span>Português</span>
+                    </div>
+                    <div class="language-option" data-lang="it" onclick="app.selectLanguage('it')">
+                        <span>🇮🇹</span>
+                        <span>Italiano</span>
                     </div>
                 </div>
             </div>
@@ -1099,7 +1105,7 @@
                 }
             }
 
-            // Built-in translations for all languages
+            // Built-in translations for ALL languages
             getBuiltInTranslations() {
                 return {
                     'en': {
@@ -1136,30 +1142,30 @@
                     'bn': {
                         "language": "ভাষা",
                         "theme": "থিম",
-                        "help": "হেল্প",
+                        "help": "সহায়তা",
                         "loading": "লোড হচ্ছে...",
                         "online": "অনলাইন",
-                        "messages": "মেসেজ",
-                        "phoneSection": "WhatsApp এ মেসেজ করুন",
-                        "phoneLabel": "ফোন নাম্বার",
-                        "messageLabel": "মেসেজ (ঐচ্ছিক)",
+                        "messages": "বার্তা",
+                        "phoneSection": "WhatsApp এ বার্তা পাঠান",
+                        "phoneLabel": "ফোন নম্বর",
+                        "messageLabel": "বার্তা (ঐচ্ছিক)",
                         "phonePlaceholder": "8801853666771 বা +8801853666771",
-                        "messagePlaceholder": "আপনার মেসেজ এখানে লিখুন...",
-                        "characters": "ক্যারেক্টার",
-                        "sendButton": "হোয়াটসঅ্যাপে ওপেন করুন",
-                        "historyTitle": "মেসেজ হিস্টোরি",
+                        "messagePlaceholder": "আপনার বার্তা এখানে টাইপ করুন...",
+                        "characters": "অক্ষর",
+                        "sendButton": "হোয়াটসঅ্যাপে খুলুন",
+                        "historyTitle": "বার্তার ইতিহাস",
                         "reload": "রিলোড",
-                        "emptyHistory": "কোনো মেসেজ হিস্টোরি নেই",
-                        "viewDetails": "বিস্তারিত",
-                        "helpTitle": "হেল্প গাইড",
-                        "step1": "ধাপ ১: ফোন নাম্বার দিন",
-                        "step1Desc": "কান্ট্রি কোড সহ বা ছাড়া নাম্বার লিখুন। সিস্টেম অটোমেটিকভাবে + যোগ করবে।",
-                        "step2": "ধাপ ２: মেসেজ লিখুন (ঐচ্ছিক)",
-                        "step2Desc": "আপনার মেসেজ টেক্সট বক্সে লিখুন। এটি সম্পূর্ণ ঐচ্ছিক, আপনি খালিও রাখতে পারেন।",
-                        "step3": "ধাপ ３: WhatsApp এ ওপেন করুন",
-                        "step3Desc": "\"হোয়াটসঅ্যাপে ওপেন করুন\" বাটনে ক্লিক করুন। এটি স্বয়ংক্রিয়ভাবে WhatsApp ওপেন করবে।",
-                        "step4": "ধাপ ４: হিস্টোরি চেক করুন",
-                        "step4Desc": "আপনার সকল মেসেজের হিস্টোরি দেখতে হিস্টোরি সেকশন ব্যবহার করুন।",
+                        "emptyHistory": "কোন বার্তার ইতিহাস নেই",
+                        "viewDetails": "বিস্তারিত দেখুন",
+                        "helpTitle": "সহায়তা গাইড",
+                        "step1": "ধাপ ১: ফোন নম্বর লিখুন",
+                        "step1Desc": "দেশের কোড সহ বা ছাড়া নম্বর লিখুন। সিস্টেম স্বয়ংক্রিয়ভাবে + যোগ করবে।",
+                        "step2": "ধাপ ২: বার্তা লিখুন (ঐচ্ছিক)",
+                        "step2Desc": "টেক্সট বক্সে আপনার বার্তা টাইপ করুন। এটি সম্পূর্ণ ঐচ্ছিক, আপনি এটি খালি রাখতে পারেন।",
+                        "step3": "ধাপ ৩: WhatsApp এ খুলুন",
+                        "step3Desc": "\"হোয়াটসঅ্যাপে খুলুন\" বোতামে ক্লিক করুন। এটি স্বয়ংক্রিয়ভাবে WhatsApp খুলবে।",
+                        "step4": "ধাপ ৪: ইতিহাস চেক করুন",
+                        "step4Desc": "আপনার সমস্ত বার্তার ইতিহাস দেখতে ইতিহাস বিভাগ ব্যবহার করুন।",
                         "adminChat": "অ্যাডমিন চ্যাট",
                         "joinGroup": "গ্রুপে যোগ দিন",
                         "translating": "অনুবাদ করা হচ্ছে..."
@@ -1167,7 +1173,7 @@
                     'hi': {
                         "language": "भाषा",
                         "theme": "थीम",
-                        "help": "मदद",
+                        "help": "सहायता",
                         "loading": "लोड हो रहा है...",
                         "online": "ऑनलाइन",
                         "messages": "संदेश",
@@ -1182,7 +1188,7 @@
                         "reload": "रीलोड",
                         "emptyHistory": "कोई संदेश इतिहास नहीं",
                         "viewDetails": "विवरण देखें",
-                        "helpTitle": "मदद गाइड",
+                        "helpTitle": "सहायता गाइड",
                         "step1": "चरण 1: फोन नंबर दर्ज करें",
                         "step1Desc": "देश कोड के साथ या बिना नंबर दर्ज करें। सिस्टम स्वचालित रूप से + जोड़ देगा।",
                         "step2": "चरण 2: संदेश लिखें (वैकल्पिक)",
@@ -1194,6 +1200,285 @@
                         "adminChat": "एडमिन चैट",
                         "joinGroup": "समूह में शामिल हों",
                         "translating": "अनुवाद हो रहा है..."
+                    },
+                    'ar': {
+                        "language": "اللغة",
+                        "theme": "السمة",
+                        "help": "مساعدة",
+                        "loading": "جاري التحميل...",
+                        "online": "متصل",
+                        "messages": "الرسائل",
+                        "phoneSection": "إرسال رسالة على واتساب",
+                        "phoneLabel": "رقم الهاتف",
+                        "messageLabel": "الرسالة (اختياري)",
+                        "phonePlaceholder": "8801853666771 أو +8801853666771",
+                        "messagePlaceholder": "اكتب رسالتك هنا...",
+                        "characters": "حرف",
+                        "sendButton": "فتح في واتساب",
+                        "historyTitle": "سجل الرسائل",
+                        "reload": "إعادة تحميل",
+                        "emptyHistory": "لا يوجد سجل للرسائل",
+                        "viewDetails": "عرض التفاصيل",
+                        "helpTitle": "دليل المساعدة",
+                        "step1": "الخطوة 1: أدخل رقم الهاتف",
+                        "step1Desc": "أدخل الرقم مع أو بدون رمز الدولة. سيقوم النظام تلقائيًا بإضافة +.",
+                        "step2": "الخطوة 2: اكتب الرسالة (اختياري)",
+                        "step2Desc": "اكتب رسالتك في مربع النص. هذا اختياري تمامًا، يمكنك تركه فارغًا.",
+                        "step3": "الخطوة 3: افتح في واتساب",
+                        "step3Desc": "انقر على زر \"فتح في واتساب\". سيفتح واتساب تلقائيًا.",
+                        "step4": "الخطوة 4: تحقق من السجل",
+                        "step4Desc": "استخدم قسم السجل لعرض جميع سجل رسائلك.",
+                        "adminChat": "دردشة المسؤول",
+                        "joinGroup": "انضم إلى المجموعة",
+                        "translating": "جاري الترجمة..."
+                    },
+                    'es': {
+                        "language": "Idioma",
+                        "theme": "Tema",
+                        "help": "Ayuda",
+                        "loading": "Cargando...",
+                        "online": "En línea",
+                        "messages": "Mensajes",
+                        "phoneSection": "Enviar mensaje en WhatsApp",
+                        "phoneLabel": "Número de teléfono",
+                        "messageLabel": "Mensaje (Opcional)",
+                        "phonePlaceholder": "8801853666771 o +8801853666771",
+                        "messagePlaceholder": "Escribe tu mensaje aquí...",
+                        "characters": "caracteres",
+                        "sendButton": "ABRIR EN WHATSAPP",
+                        "historyTitle": "Historial de mensajes",
+                        "reload": "Recargar",
+                        "emptyHistory": "No hay historial de mensajes",
+                        "viewDetails": "Ver detalles",
+                        "helpTitle": "Guía de ayuda",
+                        "step1": "Paso 1: Ingresa el número de teléfono",
+                        "step1Desc": "Ingresa el número con o sin código de país. El sistema agregará automáticamente +.",
+                        "step2": "Paso 2: Escribe el mensaje (Opcional)",
+                        "step2Desc": "Escribe tu mensaje en el cuadro de texto. Esto es completamente opcional, puedes dejarlo vacío.",
+                        "step3": "Paso 3: Abrir en WhatsApp",
+                        "step3Desc": "Haz clic en el botón \"ABRIR EN WHATSAPP\". Se abrirá WhatsApp automáticamente.",
+                        "step4": "Paso 4: Consulta el historial",
+                        "step4Desc": "Usa la sección de historial para ver todo tu historial de mensajes.",
+                        "adminChat": "Chat de administrador",
+                        "joinGroup": "Unirse al grupo",
+                        "translating": "Traduciendo..."
+                    },
+                    'fr': {
+                        "language": "Langue",
+                        "theme": "Thème",
+                        "help": "Aide",
+                        "loading": "Chargement...",
+                        "online": "En ligne",
+                        "messages": "Messages",
+                        "phoneSection": "Envoyer un message sur WhatsApp",
+                        "phoneLabel": "Numéro de téléphone",
+                        "messageLabel": "Message (Optionnel)",
+                        "phonePlaceholder": "8801853666771 ou +8801853666771",
+                        "messagePlaceholder": "Tapez votre message ici...",
+                        "characters": "caractères",
+                        "sendButton": "OUVRIR DANS WHATSAPP",
+                        "historyTitle": "Historique des messages",
+                        "reload": "Recharger",
+                        "emptyHistory": "Aucun historique de messages",
+                        "viewDetails": "Voir les détails",
+                        "helpTitle": "Guide d'aide",
+                        "step1": "Étape 1: Entrez le numéro de téléphone",
+                        "step1Desc": "Entrez le numéro avec ou sans indicatif pays. Le système ajoutera automatiquement +.",
+                        "step2": "Étape 2: Écrivez le message (Optionnel)",
+                        "step2Desc": "Tapez votre message dans la zone de texte. Ceci est complètement optionnel, vous pouvez le laisser vide.",
+                        "step3": "Étape 3: Ouvrir dans WhatsApp",
+                        "step3Desc": "Cliquez sur le bouton \"OUVRIR DANS WHATSAPP\". Cela ouvrira automatiquement WhatsApp.",
+                        "step4": "Étape 4: Vérifier l'historique",
+                        "step4Desc": "Utilisez la section historique pour voir tout votre historique de messages.",
+                        "adminChat": "Chat administrateur",
+                        "joinGroup": "Rejoindre le groupe",
+                        "translating": "Traduction en cours..."
+                    },
+                    'de': {
+                        "language": "Sprache",
+                        "theme": "Thema",
+                        "help": "Hilfe",
+                        "loading": "Lädt...",
+                        "online": "Online",
+                        "messages": "Nachrichten",
+                        "phoneSection": "Nachricht auf WhatsApp senden",
+                        "phoneLabel": "Telefonnummer",
+                        "messageLabel": "Nachricht (Optional)",
+                        "phonePlaceholder": "8801853666771 oder +8801853666771",
+                        "messagePlaceholder": "Geben Sie hier Ihre Nachricht ein...",
+                        "characters": "Zeichen",
+                        "sendButton": "IN WHATSAPP ÖFFNEN",
+                        "historyTitle": "Nachrichtenverlauf",
+                        "reload": "Neu laden",
+                        "emptyHistory": "Kein Nachrichtenverlauf",
+                        "viewDetails": "Details anzeigen",
+                        "helpTitle": "Hilfeleitfaden",
+                        "step1": "Schritt 1: Telefonnummer eingeben",
+                        "step1Desc": "Geben Sie die Nummer mit oder ohne Ländervorwahl ein. Das System fügt automatisch + hinzu.",
+                        "step2": "Schritt 2: Nachricht schreiben (Optional)",
+                        "step2Desc": "Geben Sie Ihre Nachricht in das Textfeld ein. Dies ist völlig optional, Sie können es leer lassen.",
+                        "step3": "Schritt 3: In WhatsApp öffnen",
+                        "step3Desc": "Klicken Sie auf die Schaltfläche \"IN WHATSAPP ÖFFNEN\". Es öffnet automatisch WhatsApp.",
+                        "step4": "Schritt 4: Verlauf überprüfen",
+                        "step4Desc": "Verwenden Sie den Verlaufsbereich, um Ihren gesamten Nachrichtenverlauf anzuzeigen.",
+                        "adminChat": "Admin-Chat",
+                        "joinGroup": "Gruppe beitreten",
+                        "translating": "Übersetzung läuft..."
+                    },
+                    'ja': {
+                        "language": "言語",
+                        "theme": "テーマ",
+                        "help": "ヘルプ",
+                        "loading": "読み込み中...",
+                        "online": "オンライン",
+                        "messages": "メッセージ",
+                        "phoneSection": "WhatsAppでメッセージを送信",
+                        "phoneLabel": "電話番号",
+                        "messageLabel": "メッセージ（任意）",
+                        "phonePlaceholder": "8801853666771 または +8801853666771",
+                        "messagePlaceholder": "ここにメッセージを入力...",
+                        "characters": "文字",
+                        "sendButton": "WHATSAPPで開く",
+                        "historyTitle": "メッセージ履歴",
+                        "reload": "再読み込み",
+                        "emptyHistory": "メッセージ履歴がありません",
+                        "viewDetails": "詳細を表示",
+                        "helpTitle": "ヘルプガイド",
+                        "step1": "ステップ1: 電話番号を入力",
+                        "step1Desc": "国コードありまたはなしで番号を入力します。システムが自動的に+を追加します。",
+                        "step2": "ステップ2: メッセージを書く（任意）",
+                        "step2Desc": "テキストボックスにメッセージを入力します。これは完全に任意で、空のままにすることもできます。",
+                        "step3": "ステップ3: WhatsAppで開く",
+                        "step3Desc": "「WHATSAPPで開く」ボタンをクリックします。自動的にWhatsAppが開きます。",
+                        "step4": "ステップ4: 履歴を確認",
+                        "step4Desc": "履歴セクションを使用して、すべてのメッセージ履歴を表示します。",
+                        "adminChat": "管理者チャット",
+                        "joinGroup": "グループに参加",
+                        "translating": "翻訳中..."
+                    },
+                    'zh': {
+                        "language": "语言",
+                        "theme": "主题",
+                        "help": "帮助",
+                        "loading": "加载中...",
+                        "online": "在线",
+                        "messages": "消息",
+                        "phoneSection": "在WhatsApp上发送消息",
+                        "phoneLabel": "电话号码",
+                        "messageLabel": "消息（可选）",
+                        "phonePlaceholder": "8801853666771 或 +8801853666771",
+                        "messagePlaceholder": "在此输入您的消息...",
+                        "characters": "字符",
+                        "sendButton": "在WHATSAPP中打开",
+                        "historyTitle": "消息历史",
+                        "reload": "重新加载",
+                        "emptyHistory": "没有消息历史",
+                        "viewDetails": "查看详情",
+                        "helpTitle": "帮助指南",
+                        "step1": "步骤1：输入电话号码",
+                        "step1Desc": "输入带或不带国家/地区代码的号码。系统将自动添加+。",
+                        "step2": "步骤2：写消息（可选）",
+                        "step2Desc": "在文本框中输入您的消息。这完全是可选的，您可以留空。",
+                        "step3": "步骤3：在WhatsApp中打开",
+                        "step3Desc": "单击\"在WHATSAPP中打开\"按钮。它将自动打开WhatsApp。",
+                        "step4": "步骤4：检查历史记录",
+                        "step4Desc": "使用历史记录部分查看所有消息历史记录。",
+                        "adminChat": "管理员聊天",
+                        "joinGroup": "加入群组",
+                        "translating": "翻译中..."
+                    },
+                    'ru': {
+                        "language": "Язык",
+                        "theme": "Тема",
+                        "help": "Помощь",
+                        "loading": "Загрузка...",
+                        "online": "Онлайн",
+                        "messages": "Сообщения",
+                        "phoneSection": "Отправить сообщение в WhatsApp",
+                        "phoneLabel": "Номер телефона",
+                        "messageLabel": "Сообщение (Опционально)",
+                        "phonePlaceholder": "8801853666771 или +8801853666771",
+                        "messagePlaceholder": "Введите ваше сообщение здесь...",
+                        "characters": "символов",
+                        "sendButton": "ОТКРЫТЬ В WHATSAPP",
+                        "historyTitle": "История сообщений",
+                        "reload": "Перезагрузить",
+                        "emptyHistory": "Нет истории сообщений",
+                        "viewDetails": "Просмотреть детали",
+                        "helpTitle": "Руководство по помощи",
+                        "step1": "Шаг 1: Введите номер телефона",
+                        "step1Desc": "Введите номер с кодом страны или без. Система автоматически добавит +.",
+                        "step2": "Шаг 2: Напишите сообщение (Опционально)",
+                        "step2Desc": "Введите ваше сообщение в текстовое поле. Это полностью опционально, вы можете оставить его пустым.",
+                        "step3": "Шаг 3: Открыть в WhatsApp",
+                        "step3Desc": "Нажмите кнопку \"ОТКРЫТЬ В WHATSAPP\". Она автоматически откроет WhatsApp.",
+                        "step4": "Шаг 4: Проверить историю",
+                        "step4Desc": "Используйте раздел истории для просмотра всей вашей истории сообщений.",
+                        "adminChat": "Чат с администратором",
+                        "joinGroup": "Присоединиться к группе",
+                        "translating": "Перевод..."
+                    },
+                    'pt': {
+                        "language": "Idioma",
+                        "theme": "Tema",
+                        "help": "Ajuda",
+                        "loading": "Carregando...",
+                        "online": "Online",
+                        "messages": "Mensagens",
+                        "phoneSection": "Enviar mensagem no WhatsApp",
+                        "phoneLabel": "Número de telefone",
+                        "messageLabel": "Mensagem (Opcional)",
+                        "phonePlaceholder": "8801853666771 ou +8801853666771",
+                        "messagePlaceholder": "Digite sua mensagem aqui...",
+                        "characters": "caracteres",
+                        "sendButton": "ABRIR NO WHATSAPP",
+                        "historyTitle": "Histórico de mensagens",
+                        "reload": "Recarregar",
+                        "emptyHistory": "Nenhum histórico de mensagens",
+                        "viewDetails": "Ver detalhes",
+                        "helpTitle": "Guia de ajuda",
+                        "step1": "Passo 1: Insira o número de telefone",
+                        "step1Desc": "Insira o número com ou sem código do país. O sistema adicionará automaticamente +.",
+                        "step2": "Passo 2: Escreva a mensagem (Opcional)",
+                        "step2Desc": "Digite sua mensagem na caixa de texto. Isso é completamente opcional, você pode deixá-la vazia.",
+                        "step3": "Passo 3: Abrir no WhatsApp",
+                        "step3Desc": "Clique no botão \"ABRIR NO WHATSAPP\". Ele abrirá o WhatsApp automaticamente.",
+                        "step4": "Passo 4: Verifique o histórico",
+                        "step4Desc": "Use a seção de histórico para visualizar todo o seu histórico de mensagens.",
+                        "adminChat": "Chat do administrador",
+                        "joinGroup": "Entrar no grupo",
+                        "translating": "Traduzindo..."
+                    },
+                    'it': {
+                        "language": "Lingua",
+                        "theme": "Tema",
+                        "help": "Aiuto",
+                        "loading": "Caricamento...",
+                        "online": "Online",
+                        "messages": "Messaggi",
+                        "phoneSection": "Invia messaggio su WhatsApp",
+                        "phoneLabel": "Numero di telefono",
+                        "messageLabel": "Messaggio (Opzionale)",
+                        "phonePlaceholder": "8801853666771 o +8801853666771",
+                        "messagePlaceholder": "Scrivi il tuo messaggio qui...",
+                        "characters": "caratteri",
+                        "sendButton": "APRI IN WHATSAPP",
+                        "historyTitle": "Cronologia messaggi",
+                        "reload": "Ricarica",
+                        "emptyHistory": "Nessuna cronologia messaggi",
+                        "viewDetails": "Visualizza dettagli",
+                        "helpTitle": "Guida di aiuto",
+                        "step1": "Passo 1: Inserisci il numero di telefono",
+                        "step1Desc": "Inserisci il numero con o senza prefisso internazionale. Il sistema aggiungerà automaticamente +.",
+                        "step2": "Passo 2: Scrivi il messaggio (Opzionale)",
+                        "step2Desc": "Digita il tuo messaggio nella casella di testo. Questo è completamente opzionale, puoi lasciarlo vuoto.",
+                        "step3": "Passo 3: Apri in WhatsApp",
+                        "step3Desc": "Clicca sul pulsante \"APRI IN WHATSAPP\". Aprirà automaticamente WhatsApp.",
+                        "step4": "Passo 4: Controlla la cronologia",
+                        "step4Desc": "Usa la sezione cronologia per visualizzare tutta la tua cronologia messaggi.",
+                        "adminChat": "Chat amministratore",
+                        "joinGroup": "Unisciti al gruppo",
+                        "translating": "Traduzione in corso..."
                     }
                 };
             }
@@ -1214,7 +1499,7 @@
                 });
                 
                 this.closeLanguageDropdown();
-                this.showToast(this.translateText('Language changed', lang));
+                this.showToast(this.getTranslation('Language changed', lang), 'success');
             }
 
             // Toggle language dropdown
@@ -1262,8 +1547,15 @@
                             tg.ready();
                             tg.expand();
                             
-                            // Get user data
-                            const user = tg.initDataUnsafe?.user;
+                            // Get user data from initData
+                            const initData = tg.initData || '';
+                            const initDataUnsafe = tg.initDataUnsafe || {};
+                            const user = initDataUnsafe.user;
+                            
+                            console.log('Telegram WebApp initialized');
+                            console.log('InitData:', initData);
+                            console.log('InitDataUnsafe:', initDataUnsafe);
+                            console.log('User data:', user);
                             
                             if (user) {
                                 this.currentUser = {
@@ -1276,17 +1568,23 @@
                                     isPremium: user.is_premium || false
                                 };
                                 
-                                console.log('Telegram user loaded:', this.currentUser);
+                                console.log('Telegram user loaded successfully:', this.currentUser);
+                                
+                                // Update language based on Telegram user's language
+                                if (user.language_code && this.translations[user.language_code]) {
+                                    this.selectLanguage(user.language_code);
+                                }
                             } else {
-                                console.log('No Telegram user data available');
+                                console.log('No Telegram user data found in initDataUnsafe');
                                 this.createDefaultUser();
                             }
                         } catch (error) {
-                            console.log('Telegram WebApp error:', error);
+                            console.error('Telegram WebApp initialization error:', error);
                             this.createDefaultUser();
                         }
                     } else {
-                        console.log('Not in Telegram environment');
+                        console.log('Not in Telegram WebApp environment');
+                        console.log('Available Telegram object:', window.Telegram);
                         this.createDefaultUser();
                     }
                     
@@ -1319,10 +1617,12 @@
                         userPhoto.style.backgroundImage = `url(${this.currentUser.photoUrl})`;
                         userPhoto.style.backgroundSize = 'cover';
                         userPhoto.textContent = '';
+                        console.log('User photo loaded:', this.currentUser.photoUrl);
                     } else {
                         const initials = this.currentUser.firstName.charAt(0) + (this.currentUser.lastName ? this.currentUser.lastName.charAt(0) : '');
                         userPhoto.textContent = initials;
                         userPhoto.style.backgroundImage = 'none';
+                        console.log('Using initials for user photo:', initials);
                     }
                 }
                 
@@ -1408,13 +1708,13 @@
                 }
 
                 if (!phoneInput || phoneInput === '+') {
-                    this.showError(this.translateText('Please enter phone number', this.currentLanguage));
+                    this.showError(this.getTranslation('Please enter phone number', this.currentLanguage));
                     return;
                 }
 
                 const digitsOnly = phoneInput.slice(1).replace(/\D/g, '');
                 if (digitsOnly.length < 8) {
-                    this.showError(this.translateText('Please enter valid phone number (minimum 8 digits)', this.currentLanguage));
+                    this.showError(this.getTranslation('Please enter valid phone number (minimum 8 digits)', this.currentLanguage));
                     return;
                 }
 
@@ -1439,10 +1739,10 @@
                     document.getElementById('message').value = '';
                     this.updateCharCount(0);
                     
-                    this.showToast(this.translateText('WhatsApp opened successfully', this.currentLanguage), 'success');
+                    this.showToast(this.getTranslation('WhatsApp opened successfully', this.currentLanguage), 'success');
                 } catch (error) {
                     console.error('Error:', error);
-                    this.showError(this.translateText('Failed to open WhatsApp', this.currentLanguage));
+                    this.showError(this.getTranslation('Failed to open WhatsApp', this.currentLanguage));
                 } finally {
                     setTimeout(() => {
                         sendBtn.classList.remove('loading');
@@ -1481,6 +1781,129 @@
                 this.updateHistoryCount();
             }
 
+            // Get translation for dynamic text
+            getTranslation(text, lang) {
+                const t = this.translations[lang] || this.translations['en'];
+                
+                // Simple mapping for common dynamic texts
+                const dynamicTranslations = {
+                    'Please enter phone number': {
+                        'en': 'Please enter phone number',
+                        'bn': 'দয়া করে ফোন নম্বর লিখুন',
+                        'hi': 'कृपया फोन नंबर दर्ज करें',
+                        'ar': 'يرجى إدخال رقم الهاتف',
+                        'es': 'Por favor ingrese el número de teléfono',
+                        'fr': 'Veuillez entrer le numéro de téléphone',
+                        'de': 'Bitte geben Sie die Telefonnummer ein',
+                        'ja': '電話番号を入力してください',
+                        'zh': '请输入电话号码',
+                        'ru': 'Пожалуйста, введите номер телефона',
+                        'pt': 'Por favor, insira o número de telefone',
+                        'it': 'Si prega di inserire il numero di telefono'
+                    },
+                    'Please enter valid phone number (minimum 8 digits)': {
+                        'en': 'Please enter valid phone number (minimum 8 digits)',
+                        'bn': 'দয়া করে বৈধ ফোন নম্বর লিখুন (ন্যূনতম 8 ডিজিট)',
+                        'hi': 'कृपया वैध फोन नंबर दर्ज करें (न्यूनतम 8 अंक)',
+                        'ar': 'يرجى إدخال رقم هاتف صالح (8 أرقام على الأقل)',
+                        'es': 'Por favor ingrese un número de teléfono válido (mínimo 8 dígitos)',
+                        'fr': 'Veuillez entrer un numéro de téléphone valide (8 chiffres minimum)',
+                        'de': 'Bitte geben Sie eine gültige Telefonnummer ein (mindestens 8 Ziffern)',
+                        'ja': '有効な電話番号を入力してください（最低8桁）',
+                        'zh': '请输入有效的电话号码（至少8位数字）',
+                        'ru': 'Пожалуйста, введите действительный номер телефона (минимум 8 цифр)',
+                        'pt': 'Por favor, insira um número de telefone válido (mínimo 8 dígitos)',
+                        'it': 'Si prega di inserire un numero di telefono valido (minimo 8 cifre)'
+                    },
+                    'Failed to open WhatsApp': {
+                        'en': 'Failed to open WhatsApp',
+                        'bn': 'হোয়াটসঅ্যাপ খুলতে ব্যর্থ হয়েছে',
+                        'hi': 'व्हाट्सएप खोलने में विफल',
+                        'ar': 'فشل في فتح واتساب',
+                        'es': 'Error al abrir WhatsApp',
+                        'fr': 'Échec de l\'ouverture de WhatsApp',
+                        'de': 'Fehler beim Öffnen von WhatsApp',
+                        'ja': 'WhatsAppを開けませんでした',
+                        'zh': '无法打开WhatsApp',
+                        'ru': 'Не удалось открыть WhatsApp',
+                        'pt': 'Falha ao abrir o WhatsApp',
+                        'it': 'Impossibile aprire WhatsApp'
+                    },
+                    'WhatsApp opened successfully': {
+                        'en': 'WhatsApp opened successfully',
+                        'bn': 'হোয়াটসঅ্যাপ সফলভাবে খোলা হয়েছে',
+                        'hi': 'व्हाट्सएप सफलतापूर्वक खोला गया',
+                        'ar': 'تم فتح واتساب بنجاح',
+                        'es': 'WhatsApp abierto con éxito',
+                        'fr': 'WhatsApp ouvert avec succès',
+                        'de': 'WhatsApp erfolgreich geöffnet',
+                        'ja': 'WhatsAppが正常に開かれました',
+                        'zh': 'WhatsApp已成功打开',
+                        'ru': 'WhatsApp успешно открыт',
+                        'pt': 'WhatsApp aberto com sucesso',
+                        'it': 'WhatsApp aperto con successo'
+                    },
+                    'Language changed': {
+                        'en': 'Language changed',
+                        'bn': 'ভাষা পরিবর্তন করা হয়েছে',
+                        'hi': 'भाषा बदल गई',
+                        'ar': 'تم تغيير اللغة',
+                        'es': 'Idioma cambiado',
+                        'fr': 'Langue changée',
+                        'de': 'Sprache geändert',
+                        'ja': '言語が変更されました',
+                        'zh': '语言已更改',
+                        'ru': 'Язык изменен',
+                        'pt': 'Idioma alterado',
+                        'it': 'Lingua cambiata'
+                    },
+                    'Light theme activated': {
+                        'en': 'Light theme activated',
+                        'bn': 'লাইট থিম সক্রিয় করা হয়েছে',
+                        'hi': 'लाइट थीम सक्रिय',
+                        'ar': 'تم تفعيل السمة الفاتحة',
+                        'es': 'Tema claro activado',
+                        'fr': 'Thème clair activé',
+                        'de': 'Helles Thema aktiviert',
+                        'ja': 'ライトテーマが有効になりました',
+                        'zh': '浅色主题已激活',
+                        'ru': 'Светлая тема активирована',
+                        'pt': 'Tema claro ativado',
+                        'it': 'Tema chiaro attivato'
+                    },
+                    'Dark theme activated': {
+                        'en': 'Dark theme activated',
+                        'bn': 'ডার্ক থিম সক্রিয় করা হয়েছে',
+                        'hi': 'डार्क थीम सक्रिय',
+                        'ar': 'تم تفعيل السمة الداكنة',
+                        'es': 'Tema oscuro activado',
+                        'fr': 'Thème sombre activé',
+                        'de': 'Dunkles Thema aktiviert',
+                        'ja': 'ダークテーマが有効になりました',
+                        'zh': '深色主题已激活',
+                        'ru': 'Темная тема активирована',
+                        'pt': 'Tema escuro ativado',
+                        'it': 'Tema scuro attivato'
+                    },
+                    'History reloaded': {
+                        'en': 'History reloaded',
+                        'bn': 'ইতিহাস পুনরায় লোড করা হয়েছে',
+                        'hi': 'इतिहास पुनः लोड किया गया',
+                        'ar': 'تم إعادة تحميل السجل',
+                        'es': 'Historial recargado',
+                        'fr': 'Historique rechargé',
+                        'de': 'Verlauf neu geladen',
+                        'ja': '履歴を再読み込みしました',
+                        'zh': '历史记录已重新加载',
+                        'ru': 'История перезагружена',
+                        'pt': 'Histórico recarregado',
+                        'it': 'Cronologia ricaricata'
+                    }
+                };
+
+                return dynamicTranslations[text]?.[lang] || text;
+            }
+
             // থিম পরিবর্তন
             toggleTheme() {
                 const currentTheme = document.body.getAttribute('data-theme');
@@ -1490,7 +1913,7 @@
                 localStorage.setItem('appTheme', newTheme);
                 
                 const message = newTheme === 'light' ? 'Light theme activated' : 'Dark theme activated';
-                this.showToast(this.translateText(message, this.currentLanguage));
+                this.showToast(this.getTranslation(message, this.currentLanguage), 'success');
             }
 
             // হিস্ট্রি সেভ
@@ -1560,7 +1983,7 @@
                 this.renderHistory();
                 reloadBtn.classList.remove('rotating');
                 
-                this.showToast(this.translateText('History reloaded', this.currentLanguage), 'success');
+                this.showToast(this.getTranslation('History reloaded', this.currentLanguage), 'success');
             }
 
             // হেল্প মোডাল
@@ -1658,12 +2081,6 @@ Time: ${this.formatTime(item.timestamp)}
                     top: 0,
                     behavior: 'smooth'
                 });
-            }
-
-            // Translate text helper
-            translateText(text, lang) {
-                // This is a simplified version - in a real app you'd have a proper translation system
-                return text;
             }
 
             // Local Storage
