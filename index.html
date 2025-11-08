@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Opener - Without Saving Number</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #25D366;
+            --primary-dark: #128C7E;
+            --primary-light: #dcf8c6;
+            --secondary: #667eea;
+            --secondary-dark: #764ba2;
+            --accent: #764ba2;
+            --dark: #1a202c;
+            --dark-light: #2d3748;
+            --light: #f7fafc;
+            --gray: #a0aec0;
+            --gray-light: #e2e8f0;
+            --gray-dark: #4a5568;
+            --card-bg: rgba(45, 55, 72, 0.95);
+            --card-bg-light: rgba(255, 255, 255, 0.95);
+            --text: #e2e8f0;
+            --text-dark: #2d3748;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-light: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --error: #e53e3e;
+            --success: #38a169;
+            --warning: #ed8936;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --card-bg: var(--card-bg-light);
+            --text: var(--text-dark);
+            --shadow: var(--shadow-light);
+            --background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        [data-theme="dark"] {
+            --background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            padding: 12px 15px;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* User Profile Row */
+        .user-profile-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            object-fit: cover;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            color: var(--text);
+            margin-bottom: 5px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+
+        .profile-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-header i {
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .phone-input, .message-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-sm);
+            font-size: 16px;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .phone-input:focus, .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+        }
+
+        .message-input {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.8em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* Send Button with Loading - UPDATED DESIGN */
+        .send-btn {
+            width: 100%;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.5);
+        }
+
+        .send-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .send-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .send-btn:hover::before {
+            left: 100%;
+        }
+
+        .send-btn i {
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .send-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .send-btn.loading .btn-text {
+            visibility: hidden;
+        }
+
+        .send-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid transparent;
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* History Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--text);
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .reload-btn {
+            background: rgba(37, 211, 102, 0.1);
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .reload-btn:hover {
+            background: rgba(37, 211, 102, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .reload-btn.rotating i {
+            animation: rotate 1s linear infinite;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-number {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .history-date {
+            font-size: 0.8em;
+            color: var(--gray);
+        }
+
+        .history-preview {
+            font-size: 0.9em;
+            color: var(--gray);
+            margin-top: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .detail-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detail-btn:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            color: var(--text);
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            font-size: 1.3em;
+            color: var(--text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .help-step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary);
+            transition: var(--transition);
+        }
+
+        .help-step:hover {
+            transform: translateX(5px);
+        }
+
+        .help-step h4 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .help-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .help-btn.admin {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .help-btn.group {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+        }
+
+        .help-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-top: 5px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .language-dropdown.show {
+            display: block;
+            animation: dropdownFadeIn 0.2s ease-out;
+        }
+
+        .language-option {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .language-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .language-option.active {
+            background: rgba(37, 211, 102, 0.2);
+            color: var(--primary);
+        }
+
+        .language-flag {
+            width: 20px;
+            height: 15px;
+            border-radius: 2px;
+            object-fit: cover;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 90%;
+            text-align: center;
+            font-weight: 500;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.warning {
+            background: var(--warning);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading States */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+            }
+            
+            .user-profile-row {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-meta {
+                justify-content: center;
+            }
+            
+            .help-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 20px 15px;
+            }
+            
+            .modal-content {
+                border-radius: 20px;
+            }
+            
+            .modal-header, .modal-body {
+                padding: 20px;
+            }
+            
+            .send-btn {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 100;
+            border: none;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
+        }
+
+        /* Input with icon */
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .input-with-icon input {
+            padding-left: 45px;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="container">
+        <!-- Header Controls -->
+        <div class="header-controls">
+            <!-- Language Selector -->
+            <div class="language-selector">
+                <button class="control-btn" onclick="app.toggleLanguageDropdown()">
+                    <i class="fas fa-language"></i>
+                    <span data-i18n="language">Language</span>
+                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 12px;"></i>
+                </button>
+                <div id="languageDropdown" class="language-dropdown">
+                    <div class="language-option active" data-lang="en" onclick="app.selectLanguage('en')">
+                        <span>🇺🇸</span>
+                        <span>English</span>
+                    </div>
+                    <div class="language-option" data-lang="bn" onclick="app.selectLanguage('bn')">
+                        <span>🇧🇩</span>
+                        <span>বাংলা (Bangla)</span>
+                    </div>
+                    <div class="language-option" data-lang="hi" onclick="app.selectLanguage('hi')">
+                        <span>🇮🇳</span>
+                        <span>हिन्दी (Hindi)</span>
+                    </div>
+                    <div class="language-option" data-lang="ar" onclick="app.selectLanguage('ar')">
+                        <span>🇸🇦</span>
+                        <span>العربية (Arabic)</span>
+                    </div>
+                    <div class="language-option" data-lang="es" onclick="app.selectLanguage('es')">
+                        <span>🇪🇸</span>
+                        <span>Español (Spanish)</span>
+                    </div>
+                    <div class="language-option" data-lang="fr" onclick="app.selectLanguage('fr')">
+                        <span>🇫🇷</span>
+                        <span>Français (French)</span>
+                    </div>
+                    <div class="language-option" data-lang="de" onclick="app.selectLanguage('de')">
+                        <span>🇩🇪</span>
+                        <span>Deutsch (German)</span>
+                    </div>
+                    <div class="language-option" data-lang="ja" onclick="app.selectLanguage('ja')">
+                        <span>🇯🇵</span>
+                        <span>日本語 (Japanese)</span>
+                    </div>
+                    <div class="language-option" data-lang="zh" onclick="app.selectLanguage('zh')">
+                        <span>🇨🇳</span>
+                        <span>中文 (Chinese)</span>
+                    </div>
+                    <div class="language-option" data-lang="ru" onclick="app.selectLanguage('ru')">
+                        <span>🇷🇺</span>
+                        <span>Русский (Russian)</span>
+                    </div>
+                    <div class="language-option" data-lang="pt" onclick="app.selectLanguage('pt')">
+                        <span>🇵🇹</span>
+                        <span>Português (Portuguese)</span>
+                    </div>
+                    <div class="language-option" data-lang="it" onclick="app.selectLanguage('it')">
+                        <span>🇮🇹</span>
+                        <span>Italiano (Italian)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Theme Toggle -->
+            <button class="control-btn" onclick="app.toggleTheme()">
+                <i class="fas fa-palette"></i>
+                <span data-i18n="theme">Theme</span>
+            </button>
+            
+            <!-- Help -->
+            <button class="control-btn" onclick="app.showHelpModal()">
+                <i class="fas fa-question-circle"></i>
+                <span data-i18n="help">Help</span>
+            </button>
+        </div>
+
+        <!-- User Profile Row -->
+        <div class="user-profile-row">
+            <div class="profile-photo" id="userPhoto">
+                <!-- User initials will be shown here -->
+            </div>
+            <div class="profile-info">
+                <h3 id="userName" data-i18n="loading">Loading...</h3>
+                <div class="profile-meta">
+                    <div class="profile-stat">
+                        <i class="fas fa-history"></i>
+                        <span id="historyCount">0 <span data-i18n="messages">Messages</span></span>
+                    </div>
+                    <div class="profile-stat">
+                        <i class="fas fa-user"></i>
+                        <span id="userStatus" data-i18n="online">Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone Input Section -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-phone-alt"></i>
+                <h3 class="card-title" data-i18n="phoneSection">Send Message on WhatsApp</h3>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label" data-i18n="phoneLabel">Phone Number</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-phone input-icon"></i>
+                    <input 
+                        type="tel" 
+                        id="phoneNumber" 
+                        placeholder="8801853666771 or +8801853666771" 
+                        class="phone-input"
+                        data-i18n-placeholder="phonePlaceholder"
+                    >
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" data-i18n="messageLabel">Message (Optional)</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-comment input-icon" style="top: 20px; transform: none;"></i>
+                    <textarea 
+                        id="message" 
+                        placeholder="Type your message here..." 
+                        class="message-input"
+                        rows="4"
+                        data-i18n-placeholder="messagePlaceholder"
+                    ></textarea>
+                </div>
+                <div class="char-count">
+                    <span id="charCount">0</span>/1000 <span data-i18n="characters">characters</span>
+                </div>
+            </div>
+
+            <!-- UPDATED WhatsApp Button -->
+            <button id="sendButton" class="send-btn">
+                <span class="btn-text">
+                    <i class="fab fa-whatsapp"></i>
+                    <span data-i18n="sendButton">OPEN IN WHATSAPP</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- History Section -->
+        <div class="card">
+            <div class="section-header">
+                <h3 class="section-title" data-i18n="historyTitle">Message History</h3>
+                <button id="reloadBtn" class="reload-btn" title="Reload" data-i18n-title="reload">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <p data-i18n="emptyHistory">No message history</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="helpTitle">Help Guide</h3>
+                <button class="close-btn" onclick="app.closeModal('helpModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-content">
+                    <div class="help-step">
+                        <h4><i class="fas fa-mobile-alt"></i> <span data-i18n="step1">Step 1: Enter Phone Number</span></h4>
+                        <p data-i18n="step1Desc">Enter number with or without country code. System will automatically add +.</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fas fa-comment"></i> <span data-i18n="step2">Step 2: Write Message (Optional)</span></h4>
+                        <p data-i18n="step2Desc">Type your message in the text box. This is completely optional, you can leave it empty.</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fab fa-whatsapp"></i> <span data-i18n="step3">Step 3: Open in WhatsApp</span></h4>
+                        <p data-i18n="step3Desc">Click "OPEN IN WHATSAPP" button. It will automatically open WhatsApp.</p>
+                    </div>
+                    
+                    <div class="help-step">
+                        <h4><i class="fas fa-history"></i> <span data-i18n="step4">Step 4: Check History</span></h4>
+                        <p data-i18n="step4Desc">Use history section to view all your message history.</p>
+                    </div>
+                </div>
+
+                <!-- Help Buttons -->
+                <div class="help-buttons">
+                    <a href="https://t.me/admin_username" class="help-btn admin" target="_blank">
+                        <i class="fas fa-headset"></i>
+                        <span data-i18n="adminChat">Admin Chat</span>
+                    </a>
+                    <a href="https://t.me/group_link" class="help-btn group" target="_blank">
+                        <i class="fas fa-users"></i>
+                        <span data-i18n="joinGroup">Join Group</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div data-i18n="translating">Translating...</div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="app.scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKsRo1d6VSlyeKWIviZmA10yMoUqUp8gA",
+            authDomain: "open-in-whatsapp-6cb3e.firebaseapp.com",
+            databaseURL: "https://open-in-whatsapp-6cb3e-default-rtdb.firebaseio.com",
+            projectId: "open-in-whatsapp-6cb3e",
+            storageBucket: "open-in-whatsapp-6cb3e.firebasestorage.app",
+            messagingSenderId: "337423714949",
+            appId: "1:337423714949:web:edab04576c0157859af7ec"
+        };
+
+        // WhatsApp Opener Application
+        class WhatsAppOpener {
+            constructor() {
+                this.history = this.loadHistory();
+                this.currentUser = null;
+                this.currentLanguage = 'en'; // Default language set to English
+                this.translations = {};
+                this.init();
+            }
+
+            async init() {
+                this.bindEvents();
+                await this.loadTranslations();
+                this.loadSettings();
+                await this.loadTelegramUser();
+                this.renderHistory();
+                this.initializeFirebase();
+                this.setupLanguageClose();
+                this.setupScrollToTop();
+            }
+
+            // Load translation files
+            async loadTranslations() {
+                try {
+                    const response = await fetch('./translations.json');
+                    this.translations = await response.json();
+                } catch (error) {
+                    console.log('Using built-in translations');
+                    this.translations = this.getBuiltInTranslations();
+                }
+            }
+
+            // Built-in translations for all languages
+            getBuiltInTranslations() {
+                return {
+                    'en': {
+                        "language": "Language",
+                        "theme": "Theme",
+                        "help": "Help",
+                        "loading": "Loading...",
+                        "online": "Online",
+                        "messages": "Messages",
+                        "phoneSection": "Send Message on WhatsApp",
+                        "phoneLabel": "Phone Number",
+                        "messageLabel": "Message (Optional)",
+                        "phonePlaceholder": "8801853666771 or +8801853666771",
+                        "messagePlaceholder": "Type your message here...",
+                        "characters": "characters",
+                        "sendButton": "OPEN IN WHATSAPP",
+                        "historyTitle": "Message History",
+                        "reload": "Reload",
+                        "emptyHistory": "No message history",
+                        "viewDetails": "View Details",
+                        "helpTitle": "Help Guide",
+                        "step1": "Step 1: Enter Phone Number",
+                        "step1Desc": "Enter number with or without country code. System will automatically add +.",
+                        "step2": "Step 2: Write Message (Optional)",
+                        "step2Desc": "Type your message in the text box. This is completely optional, you can leave it empty.",
+                        "step3": "Step 3: Open in WhatsApp",
+                        "step3Desc": "Click \"OPEN IN WHATSAPP\" button. It will automatically open WhatsApp.",
+                        "step4": "Step 4: Check History",
+                        "step4Desc": "Use history section to view all your message history.",
+                        "adminChat": "Admin Chat",
+                        "joinGroup": "Join Group",
+                        "translating": "Translating..."
+                    },
+                    'bn': {
+                        "language": "ভাষা",
+                        "theme": "থিম",
+                        "help": "হেল্প",
+                        "loading": "লোড হচ্ছে...",
+                        "online": "অনলাইন",
+                        "messages": "মেসেজ",
+                        "phoneSection": "WhatsApp এ মেসেজ করুন",
+                        "phoneLabel": "ফোন নাম্বার",
+                        "messageLabel": "মেসেজ (ঐচ্ছিক)",
+                        "phonePlaceholder": "8801853666771 বা +8801853666771",
+                        "messagePlaceholder": "আপনার মেসেজ এখানে লিখুন...",
+                        "characters": "ক্যারেক্টার",
+                        "sendButton": "হোয়াটসঅ্যাপে ওপেন করুন",
+                        "historyTitle": "মেসেজ হিস্টোরি",
+                        "reload": "রিলোড",
+                        "emptyHistory": "কোনো মেসেজ হিস্টোরি নেই",
+                        "viewDetails": "বিস্তারিত",
+                        "helpTitle": "হেল্প গাইড",
+                        "step1": "ধাপ ১: ফোন নাম্বার দিন",
+                        "step1Desc": "কান্ট্রি কোড সহ বা ছাড়া নাম্বার লিখুন। সিস্টেম অটোমেটিকভাবে + যোগ করবে।",
+                        "step2": "ধাপ ２: মেসেজ লিখুন (ঐচ্ছিক)",
+                        "step2Desc": "আপনার মেসেজ টেক্সট বক্সে লিখুন। এটি সম্পূর্ণ ঐচ্ছিক, আপনি খালিও রাখতে পারেন।",
+                        "step3": "ধাপ ３: WhatsApp এ ওপেন করুন",
+                        "step3Desc": "\"হোয়াটসঅ্যাপে ওপেন করুন\" বাটনে ক্লিক করুন। এটি স্বয়ংক্রিয়ভাবে WhatsApp ওপেন করবে।",
+                        "step4": "ধাপ ４: হিস্টোরি চেক করুন",
+                        "step4Desc": "আপনার সকল মেসেজের হিস্টোরি দেখতে হিস্টোরি সেকশন ব্যবহার করুন।",
+                        "adminChat": "অ্যাডমিন চ্যাট",
+                        "joinGroup": "গ্রুপে যোগ দিন",
+                        "translating": "অনুবাদ করা হচ্ছে..."
+                    },
+                    'hi': {
+                        "language": "भाषा",
+                        "theme": "थीम",
+                        "help": "मदद",
+                        "loading": "लोड हो रहा है...",
+                        "online": "ऑनलाइन",
+                        "messages": "संदेश",
+                        "phoneSection": "WhatsApp पर संदेश भेजें",
+                        "phoneLabel": "फोन नंबर",
+                        "messageLabel": "संदेश (वैकल्पिक)",
+                        "phonePlaceholder": "8801853666771 या +8801853666771",
+                        "messagePlaceholder": "अपना संदेश यहाँ टाइप करें...",
+                        "characters": "अक्षर",
+                        "sendButton": "व्हाट्सएप में खोलें",
+                        "historyTitle": "संदेश इतिहास",
+                        "reload": "रीलोड",
+                        "emptyHistory": "कोई संदेश इतिहास नहीं",
+                        "viewDetails": "विवरण देखें",
+                        "helpTitle": "मदद गाइड",
+                        "step1": "चरण 1: फोन नंबर दर्ज करें",
+                        "step1Desc": "देश कोड के साथ या बिना नंबर दर्ज करें। सिस्टम स्वचालित रूप से + जोड़ देगा।",
+                        "step2": "चरण 2: संदेश लिखें (वैकल्पिक)",
+                        "step2Desc": "टेक्स्ट बॉक्स में अपना संदेश टाइप करें। यह पूरी तरह से वैकल्पिक है, आप इसे खाली छोड़ सकते हैं।",
+                        "step3": "चरण 3: व्हाट्सएप में खोलें",
+                        "step3Desc": "\"व्हाट्सएप में खोलें\" बटन पर क्लिक करें। यह स्वचालित रूप से व्हाट्सएप खोलेगा।",
+                        "step4": "चरण 4: इतिहास जांचें",
+                        "step4Desc": "अपने सभी संदेश इतिहास को देखने के लिए इतिहास अनुभाग का उपयोग करें।",
+                        "adminChat": "एडमिन चैट",
+                        "joinGroup": "समूह में शामिल हों",
+                        "translating": "अनुवाद हो रहा है..."
+                    },
+                    'ar': {
+                        "language": "اللغة",
+                        "theme": "السمة",
+                        "help": "مساعدة",
+                        "loading": "جاري التحميل...",
+                        "online": "متصل",
+                        "messages": "الرسائل",
+                        "phoneSection": "إرسال رسالة على واتساب",
+                        "phoneLabel": "رقم الهاتف",
+                        "messageLabel": "الرسالة (اختياري)",
+                        "phonePlaceholder": "8801853666771 أو +8801853666771",
+                        "messagePlaceholder": "اكتب رسالتك هنا...",
+                        "characters": "حرف",
+                        "sendButton": "فتح في واتساب",
+                        "historyTitle": "سجل الرسائل",
+                        "reload": "إعادة تحميل",
+                        "emptyHistory": "لا يوجد سجل للرسائل",
+                        "viewDetails": "عرض التفاصيل",
+                        "helpTitle": "دليل المساعدة",
+                        "step1": "الخطوة 1: أدخل رقم الهاتف",
+                        "step1Desc": "أدخل الرقم مع أو بدون رمز الدولة. سيقوم النظام تلقائيًا بإضافة +.",
+                        "step2": "الخطوة 2: اكتب الرسالة (اختياري)",
+                        "step2Desc": "اكتب رسالتك في مربع النص. هذا اختياري تمامًا، يمكنك تركه فارغًا.",
+                        "step3": "الخطوة 3: افتح في واتساب",
+                        "step3Desc": "انقر على زر \"فتح في واتساب\". سيفتح واتساب تلقائيًا.",
+                        "step4": "الخطوة 4: تحقق من السجل",
+                        "step4Desc": "استخدم قسم السجل لعرض جميع سجل رسائلك.",
+                        "adminChat": "دردشة المسؤول",
+                        "joinGroup": "انضم إلى المجموعة",
+                        "translating": "جاري الترجمة..."
+                    },
+                    'es': {
+                        "language": "Idioma",
+                        "theme": "Tema",
+                        "help": "Ayuda",
+                        "loading": "Cargando...",
+                        "online": "En línea",
+                        "messages": "Mensajes",
+                        "phoneSection": "Enviar mensaje en WhatsApp",
+                        "phoneLabel": "Número de teléfono",
+                        "messageLabel": "Mensaje (Opcional)",
+                        "phonePlaceholder": "8801853666771 o +8801853666771",
+                        "messagePlaceholder": "Escribe tu mensaje aquí...",
+                        "characters": "caracteres",
+                        "sendButton": "ABRIR EN WHATSAPP",
+                        "historyTitle": "Historial de mensajes",
+                        "reload": "Recargar",
+                        "emptyHistory": "No hay historial de mensajes",
+                        "viewDetails": "Ver detalles",
+                        "helpTitle": "Guía de ayuda",
+                        "step1": "Paso 1: Ingresa el número de teléfono",
+                        "step1Desc": "Ingresa el número con o sin código de país. El sistema agregará automáticamente +.",
+                        "step2": "Paso 2: Escribe el mensaje (Opcional)",
+                        "step2Desc": "Escribe tu mensaje en el cuadro de texto. Esto es completamente opcional, puedes dejarlo vacío.",
+                        "step3": "Paso 3: Abrir en WhatsApp",
+                        "step3Desc": "Haz clic en el botón \"ABRIR EN WHATSAPP\". Se abrirá WhatsApp automáticamente.",
+                        "step4": "Paso 4: Consulta el historial",
+                        "step4Desc": "Usa la sección de historial para ver todo tu historial de mensajes.",
+                        "adminChat": "Chat de administrador",
+                        "joinGroup": "Unirse al grupo",
+                        "translating": "Traduciendo..."
+                    },
+                    'fr': {
+                        "language": "Langue",
+                        "theme": "Thème",
+                        "help": "Aide",
+                        "loading": "Chargement...",
+                        "online": "En ligne",
+                        "messages": "Messages",
+                        "phoneSection": "Envoyer un message sur WhatsApp",
+                        "phoneLabel": "Numéro de téléphone",
+                        "messageLabel": "Message (Optionnel)",
+                        "phonePlaceholder": "8801853666771 ou +8801853666771",
+                        "messagePlaceholder": "Tapez votre message ici...",
+                        "characters": "caractères",
+                        "sendButton": "OUVRIR DANS WHATSAPP",
+                        "historyTitle": "Historique des messages",
+                        "reload": "Recharger",
+                        "emptyHistory": "Aucun historique de messages",
+                        "viewDetails": "Voir les détails",
+                        "helpTitle": "Guide d'aide",
+                        "step1": "Étape 1: Entrez le numéro de téléphone",
+                        "step1Desc": "Entrez le numéro avec ou sans indicatif pays. Le système ajoutera automatiquement +.",
+                        "step2": "Étape 2: Écrivez le message (Optionnel)",
+                        "step2Desc": "Tapez votre message dans la zone de texte. Ceci est complètement optionnel, vous pouvez le laisser vide.",
+                        "step3": "Étape 3: Ouvrir dans WhatsApp",
+                        "step3Desc": "Cliquez sur le bouton \"OUVRIR DANS WHATSAPP\". Cela ouvrira automatiquement WhatsApp.",
+                        "step4": "Étape 4: Vérifier l'historique",
+                        "step4Desc": "Utilisez la section historique pour voir tout votre historique de messages.",
+                        "adminChat": "Chat administrateur",
+                        "joinGroup": "Rejoindre le groupe",
+                        "translating": "Traduction en cours..."
+                    },
+                    'de': {
+                        "language": "Sprache",
+                        "theme": "Thema",
+                        "help": "Hilfe",
+                        "loading": "Lädt...",
+                        "online": "Online",
+                        "messages": "Nachrichten",
+                        "phoneSection": "Nachricht auf WhatsApp senden",
+                        "phoneLabel": "Telefonnummer",
+                        "messageLabel": "Nachricht (Optional)",
+                        "phonePlaceholder": "8801853666771 oder +8801853666771",
+                        "messagePlaceholder": "Geben Sie hier Ihre Nachricht ein...",
+                        "characters": "Zeichen",
+                        "sendButton": "IN WHATSAPP ÖFFNEN",
+                        "historyTitle": "Nachrichtenverlauf",
+                        "reload": "Neu laden",
+                        "emptyHistory": "Kein Nachrichtenverlauf",
+                        "viewDetails": "Details anzeigen",
+                        "helpTitle": "Hilfeleitfaden",
+                        "step1": "Schritt 1: Telefonnummer eingeben",
+                        "step1Desc": "Geben Sie die Nummer mit oder ohne Ländervorwahl ein. Das System fügt automatisch + hinzu.",
+                        "step2": "Schritt 2: Nachricht schreiben (Optional)",
+                        "step2Desc": "Geben Sie Ihre Nachricht in das Textfeld ein. Dies ist völlig optional, Sie können es leer lassen.",
+                        "step3": "Schritt 3: In WhatsApp öffnen",
+                        "step3Desc": "Klicken Sie auf die Schaltfläche \"IN WHATSAPP ÖFFNEN\". Es öffnet automatisch WhatsApp.",
+                        "step4": "Schritt 4: Verlauf überprüfen",
+                        "step4Desc": "Verwenden Sie den Verlaufsbereich, um Ihren gesamten Nachrichtenverlauf anzuzeigen.",
+                        "adminChat": "Admin-Chat",
+                        "joinGroup": "Gruppe beitreten",
+                        "translating": "Übersetzung läuft..."
+                    },
+                    'ja': {
+                        "language": "言語",
+                        "theme": "テーマ",
+                        "help": "ヘルプ",
+                        "loading": "読み込み中...",
+                        "online": "オンライン",
+                        "messages": "メッセージ",
+                        "phoneSection": "WhatsAppでメッセージを送信",
+                        "phoneLabel": "電話番号",
+                        "messageLabel": "メッセージ（任意）",
+                        "phonePlaceholder": "8801853666771 または +8801853666771",
+                        "messagePlaceholder": "ここにメッセージを入力...",
+                        "characters": "文字",
+                        "sendButton": "WHATSAPPで開く",
+                        "historyTitle": "メッセージ履歴",
+                        "reload": "再読み込み",
+                        "emptyHistory": "メッセージ履歴がありません",
+                        "viewDetails": "詳細を表示",
+                        "helpTitle": "ヘルプガイド",
+                        "step1": "ステップ1: 電話番号を入力",
+                        "step1Desc": "国コードありまたはなしで番号を入力します。システムが自動的に+を追加します。",
+                        "step2": "ステップ2: メッセージを書く（任意）",
+                        "step2Desc": "テキストボックスにメッセージを入力します。これは完全に任意で、空のままにすることもできます。",
+                        "step3": "ステップ3: WhatsAppで開く",
+                        "step3Desc": "「WHATSAPPで開く」ボタンをクリックします。自動的にWhatsAppが開きます。",
+                        "step4": "ステップ4: 履歴を確認",
+                        "step4Desc": "履歴セクションを使用して、すべてのメッセージ履歴を表示します。",
+                        "adminChat": "管理者チャット",
+                        "joinGroup": "グループに参加",
+                        "translating": "翻訳中..."
+                    },
+                    'zh': {
+                        "language": "语言",
+                        "theme": "主题",
+                        "help": "帮助",
+                        "loading": "加载中...",
+                        "online": "在线",
+                        "messages": "消息",
+                        "phoneSection": "在WhatsApp上发送消息",
+                        "phoneLabel": "电话号码",
+                        "messageLabel": "消息（可选）",
+                        "phonePlaceholder": "8801853666771 或 +8801853666771",
+                        "messagePlaceholder": "在此输入您的消息...",
+                        "characters": "字符",
+                        "sendButton": "在WHATSAPP中打开",
+                        "historyTitle": "消息历史",
+                        "reload": "重新加载",
+                        "emptyHistory": "没有消息历史",
+                        "viewDetails": "查看详情",
+                        "helpTitle": "帮助指南",
+                        "step1": "步骤1：输入电话号码",
+                        "step1Desc": "输入带或不带国家/地区代码的号码。系统将自动添加+。",
+                        "step2": "步骤2：写消息（可选）",
+                        "step2Desc": "在文本框中输入您的消息。这完全是可选的，您可以留空。",
+                        "step3": "步骤3：在WhatsApp中打开",
+                        "step3Desc": "单击\"在WHATSAPP中打开\"按钮。它将自动打开WhatsApp。",
+                        "step4": "步骤4：检查历史记录",
+                        "step4Desc": "使用历史记录部分查看所有消息历史记录。",
+                        "adminChat": "管理员聊天",
+                        "joinGroup": "加入群组",
+                        "translating": "翻译中..."
+                    },
+                    'ru': {
+                        "language": "Язык",
+                        "theme": "Тема",
+                        "help": "Помощь",
+                        "loading": "Загрузка...",
+                        "online": "Онлайн",
+                        "messages": "Сообщения",
+                        "phoneSection": "Отправить сообщение в WhatsApp",
+                        "phoneLabel": "Номер телефона",
+                        "messageLabel": "Сообщение (Опционально)",
+                        "phonePlaceholder": "8801853666771 или +8801853666771",
+                        "messagePlaceholder": "Введите ваше сообщение здесь...",
+                        "characters": "символов",
+                        "sendButton": "ОТКРЫТЬ В WHATSAPP",
+                        "historyTitle": "История сообщений",
+                        "reload": "Перезагрузить",
+                        "emptyHistory": "Нет истории сообщений",
+                        "viewDetails": "Просмотреть детали",
+                        "helpTitle": "Руководство по помощи",
+                        "step1": "Шаг 1: Введите номер телефона",
+                        "step1Desc": "Введите номер с кодом страны или без. Система автоматически добавит +.",
+                        "step2": "Шаг 2: Напишите сообщение (Опционально)",
+                        "step2Desc": "Введите ваше сообщение в текстовое поле. Это полностью опционально, вы можете оставить его пустым.",
+                        "step3": "Шаг 3: Открыть в WhatsApp",
+                        "step3Desc": "Нажмите кнопку \"ОТКРЫТЬ В WHATSAPP\". Она автоматически откроет WhatsApp.",
+                        "step4": "Шаг 4: Проверить историю",
+                        "step4Desc": "Используйте раздел истории для просмотра всей вашей истории сообщений.",
+                        "adminChat": "Чат с администратором",
+                        "joinGroup": "Присоединиться к группе",
+                        "translating": "Перевод..."
+                    },
+                    'pt': {
+                        "language": "Idioma",
+                        "theme": "Tema",
+                        "help": "Ajuda",
+                        "loading": "Carregando...",
+                        "online": "Online",
+                        "messages": "Mensagens",
+                        "phoneSection": "Enviar mensagem no WhatsApp",
+                        "phoneLabel": "Número de telefone",
+                        "messageLabel": "Mensagem (Opcional)",
+                        "phonePlaceholder": "8801853666771 ou +8801853666771",
+                        "messagePlaceholder": "Digite sua mensagem aqui...",
+                        "characters": "caracteres",
+                        "sendButton": "ABRIR NO WHATSAPP",
+                        "historyTitle": "Histórico de mensagens",
+                        "reload": "Recarregar",
+                        "emptyHistory": "Nenhum histórico de mensagens",
+                        "viewDetails": "Ver detalhes",
+                        "helpTitle": "Guia de ajuda",
+                        "step1": "Passo 1: Insira o número de telefone",
+                        "step1Desc": "Insira o número com ou sem código do país. O sistema adicionará automaticamente +.",
+                        "step2": "Passo 2: Escreva a mensagem (Opcional)",
+                        "step2Desc": "Digite sua mensagem na caixa de texto. Isso é completamente opcional, você pode deixá-la vazia.",
+                        "step3": "Passo 3: Abrir no WhatsApp",
+                        "step3Desc": "Clique no botão \"ABRIR NO WHATSAPP\". Ele abrirá o WhatsApp automaticamente.",
+                        "step4": "Passo 4: Verifique o histórico",
+                        "step4Desc": "Use a seção de histórico para visualizar todo o seu histórico de mensagens.",
+                        "adminChat": "Chat do administrador",
+                        "joinGroup": "Entrar no grupo",
+                        "translating": "Traduzindo..."
+                    },
+                    'it': {
+                        "language": "Lingua",
+                        "theme": "Tema",
+                        "help": "Aiuto",
+                        "loading": "Caricamento...",
+                        "online": "Online",
+                        "messages": "Messaggi",
+                        "phoneSection": "Invia messaggio su WhatsApp",
+                        "phoneLabel": "Numero di telefono",
+                        "messageLabel": "Messaggio (Opzionale)",
+                        "phonePlaceholder": "8801853666771 o +8801853666771",
+                        "messagePlaceholder": "Scrivi il tuo messaggio qui...",
+                        "characters": "caratteri",
+                        "sendButton": "APRI IN WHATSAPP",
+                        "historyTitle": "Cronologia messaggi",
+                        "reload": "Ricarica",
+                        "emptyHistory": "Nessuna cronologia messaggi",
+                        "viewDetails": "Visualizza dettagli",
+                        "helpTitle": "Guida di aiuto",
+                        "step1": "Passo 1: Inserisci il numero di telefono",
+                        "step1Desc": "Inserisci il numero con o senza prefisso internazionale. Il sistema aggiungerà automaticamente +.",
+                        "step2": "Passo 2: Scrivi il messaggio (Opzionale)",
+                        "step2Desc": "Digita il tuo messaggio nella casella di testo. Questo è completamente opzionale, puoi lasciarlo vuoto.",
+                        "step3": "Passo 3: Apri in WhatsApp",
+                        "step3Desc": "Clicca sul pulsante \"APRI IN WHATSAPP\". Aprirà automaticamente WhatsApp.",
+                        "step4": "Passo 4: Controlla la cronologia",
+                        "step4Desc": "Usa la sezione cronologia per visualizzare tutta la tua cronologia messaggi.",
+                        "adminChat": "Chat amministratore",
+                        "joinGroup": "Unisciti al gruppo",
+                        "translating": "Traduzione in corso..."
+                    }
+                };
+            }
+
+            // Language selection
+            selectLanguage(lang) {
+                if (this.currentLanguage === lang) return;
+                
+                this.currentLanguage = lang;
+                localStorage.setItem('appLanguage', lang);
+                
+                // Update UI immediately
+                this.updateContentByLanguage(lang);
+                
+                // Update language dropdown
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.classList.toggle('active', option.dataset.lang === lang);
+                });
+                
+                this.closeLanguageDropdown();
+                this.showToast(this.translateText('Language changed', lang));
+            }
+
+            // Toggle language dropdown
+            toggleLanguageDropdown() {
+                const dropdown = document.getElementById('languageDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            // Close language dropdown
+            closeLanguageDropdown() {
+                document.getElementById('languageDropdown').classList.remove('show');
+            }
+
+            // Setup language dropdown close when clicking outside
+            setupLanguageClose() {
+                document.addEventListener('click', (e) => {
+                    const languageSelector = document.querySelector('.language-selector');
+                    if (!languageSelector.contains(e.target)) {
+                        this.closeLanguageDropdown();
+                    }
+                });
+            }
+
+            // Settings লোড - ভাষা এবং থিম
+            loadSettings() {
+                // ভাষা সেটিংস
+                const savedLanguage = localStorage.getItem('appLanguage') || 'en';
+                this.currentLanguage = savedLanguage;
+                this.updateContentByLanguage(savedLanguage);
+
+                // থিম সেটিংস
+                const savedTheme = localStorage.getItem('appTheme') || 'dark';
+                document.body.setAttribute('data-theme', savedTheme);
+            }
+
+            // Telegram User Data Loading
+            async loadTelegramUser() {
+                return new Promise((resolve) => {
+                    if (window.Telegram && Telegram.WebApp) {
+                        try {
+                            const tg = Telegram.WebApp;
+                            tg.ready();
+                            tg.expand();
+                            
+                            const user = tg.initDataUnsafe?.user;
+                            
+                            if (user) {
+                                this.currentUser = {
+                                    id: user.id,
+                                    firstName: user.first_name || 'User',
+                                    lastName: user.last_name || '',
+                                    username: user.username || 'user',
+                                    photoUrl: user.photo_url,
+                                    languageCode: user.language_code || 'en',
+                                    isPremium: user.is_premium || false
+                                };
+                            }
+                        } catch (error) {
+                            console.log('Telegram WebApp error:', error);
+                        }
+                    }
+                    
+                    if (!this.currentUser) {
+                        this.currentUser = {
+                            id: 'web_user_' + Date.now(),
+                            firstName: 'User',
+                            lastName: '',
+                            username: 'user',
+                            photoUrl: '',
+                            languageCode: 'en',
+                            isPremium: false
+                        };
+                    }
+                    
+                    this.updateUserProfile();
+                    resolve();
+                });
+            }
+
+            // ইউজার প্রোফাইল আপডেট
+            updateUserProfile() {
+                if (this.currentUser) {
+                    const name = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
+                    document.getElementById('userName').textContent = name;
+                    
+                    const userPhoto = document.getElementById('userPhoto');
+                    if (this.currentUser.photoUrl) {
+                        userPhoto.style.backgroundImage = `url(${this.currentUser.photoUrl})`;
+                        userPhoto.style.backgroundSize = 'cover';
+                        userPhoto.textContent = '';
+                    } else {
+                        const initials = this.currentUser.firstName.charAt(0) + (this.currentUser.lastName ? this.currentUser.lastName.charAt(0) : '');
+                        userPhoto.textContent = initials;
+                        userPhoto.style.backgroundImage = 'none';
+                    }
+                }
+                
+                this.updateHistoryCount();
+            }
+
+            // Firebase Initialization
+            async initializeFirebase() {
+                try {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    this.db = firebase.firestore();
+                    await this.saveUserToFirebase();
+                } catch (error) {
+                    console.log('Firebase initialized');
+                }
+            }
+
+            // Firebase এ User Save
+            async saveUserToFirebase() {
+                if (!this.db || !this.currentUser) return;
+                
+                try {
+                    await this.db.collection('users').doc(this.currentUser.id.toString()).set({
+                        ...this.currentUser,
+                        lastActive: new Date(),
+                        createdAt: new Date()
+                    }, { merge: true });
+                } catch (error) {
+                    console.log('User profile save completed');
+                }
+            }
+
+            // Event Binding
+            bindEvents() {
+                // Send Button
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                // Phone Input - Auto add +
+                document.getElementById('phoneNumber').addEventListener('input', (e) => {
+                    this.autoAddPlus(e.target);
+                });
+
+                // Enter key support
+                document.getElementById('phoneNumber').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+
+                // Character count
+                document.getElementById('message').addEventListener('input', (e) => {
+                    this.updateCharCount(e.target.value.length);
+                });
+
+                // Reload Button
+                document.getElementById('reloadBtn').addEventListener('click', () => {
+                    this.reloadHistory();
+                });
+            }
+
+            // Auto add + to phone number
+            autoAddPlus(input) {
+                let value = input.value.replace(/[^\d+]/g, '');
+                
+                if (!value.startsWith('+')) {
+                    value = '+' + value;
+                }
+                
+                input.value = value;
+            }
+
+            // Send Message
+            async sendMessage() {
+                let phoneInput = document.getElementById('phoneNumber').value.trim();
+                const message = document.getElementById('message').value.trim();
+                const sendBtn = document.getElementById('sendButton');
+
+                if (!phoneInput.startsWith('+')) {
+                    phoneInput = '+' + phoneInput;
+                    document.getElementById('phoneNumber').value = phoneInput;
+                }
+
+                if (!phoneInput || phoneInput === '+') {
+                    this.showError(this.translateText('Please enter phone number', this.currentLanguage));
+                    return;
+                }
+
+                const digitsOnly = phoneInput.slice(1).replace(/\D/g, '');
+                if (digitsOnly.length < 8) {
+                    this.showError(this.translateText('Please enter valid phone number (minimum 8 digits)', this.currentLanguage));
+                    return;
+                }
+
+                let whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneInput}`;
+                if (message) {
+                    whatsappUrl += `&text=${encodeURIComponent(message)}`;
+                }
+
+                sendBtn.classList.add('loading');
+
+                try {
+                    window.open(whatsappUrl, '_blank');
+                    
+                    await this.saveToHistory({
+                        phoneNumber: phoneInput,
+                        message: message
+                    });
+                    
+                    document.getElementById('phoneNumber').value = '';
+                    document.getElementById('message').value = '';
+                    this.updateCharCount(0);
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.showError(this.translateText('Failed to open WhatsApp', this.currentLanguage));
+                } finally {
+                    setTimeout(() => {
+                        sendBtn.classList.remove('loading');
+                    }, 1000);
+                }
+            }
+
+            // ভাষা অনুযায়ী কন্টেন্ট আপডেট
+            updateContentByLanguage(lang) {
+                const t = this.translations[lang] || this.translations['en'];
+                
+                // Update all elements with data-i18n attribute
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (t[key]) {
+                        el.textContent = t[key];
+                    }
+                });
+
+                // Update placeholder texts
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    const key = el.getAttribute('data-i18n-placeholder');
+                    if (t[key]) {
+                        el.placeholder = t[key];
+                    }
+                });
+
+                // Update title attributes
+                document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                    const key = el.getAttribute('data-i18n-title');
+                    if (t[key]) {
+                        el.title = t[key];
+                    }
+                });
+
+                this.updateHistoryCount();
+            }
+
+            // থিম পরিবর্তন
+            toggleTheme() {
+                const currentTheme = document.body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('appTheme', newTheme);
+                
+                const message = newTheme === 'light' ? 'Light theme activated' : 'Dark theme activated';
+                this.showToast(this.translateText(message, this.currentLanguage));
+            }
+
+            // হিস্ট্রি সেভ
+            async saveToHistory(data) {
+                const historyItem = {
+                    id: Date.now(),
+                    ...data,
+                    timestamp: new Date().toISOString()
+                };
+
+                this.history.unshift(historyItem);
+                this.saveHistory();
+                this.renderHistory();
+                this.updateHistoryCount();
+            }
+
+            // হিস্ট্রি কাউন্ট আপডেট
+            updateHistoryCount() {
+                const t = this.translations[this.currentLanguage] || this.translations['en'];
+                document.getElementById('historyCount').innerHTML = `${this.history.length} ${t['messages']}`;
+            }
+
+            // হিস্ট্রি রেন্ডার
+            renderHistory() {
+                const historyList = document.getElementById('historyList');
+                const t = this.translations[this.currentLanguage] || this.translations['en'];
+                
+                if (this.history.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>${t['emptyHistory']}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = this.history.map((item, index) => `
+                    <div class="history-item" onclick="app.showHistoryDetail(${index})">
+                        <div class="history-info">
+                            <div class="history-number">${item.phoneNumber}</div>
+                            <div class="history-date">${this.formatDate(item.timestamp)}</div>
+                            ${item.message ? `<div class="history-preview">${item.message}</div>` : ''}
+                        </div>
+                        <button class="detail-btn">
+                            <i class="fas fa-eye"></i>
+                            ${t['viewDetails']}
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // রিলোড হিস্ট্রি
+            async reloadHistory() {
+                const reloadBtn = document.getElementById('reloadBtn');
+                reloadBtn.classList.add('rotating');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                this.renderHistory();
+                reloadBtn.classList.remove('rotating');
+            }
+
+            // হেল্প মোডাল
+            showHelpModal() {
+                document.getElementById('helpModal').style.display = 'flex';
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).style.display = 'none';
+            }
+
+            // হিস্ট্রি ডিটেইল
+            showHistoryDetail(index) {
+                const item = this.history[index];
+                const t = this.translations[this.currentLanguage] || this.translations['en'];
+                alert(`${t['viewDetails']}:\n${t['phoneLabel']}: ${item.phoneNumber}\n${t['messageLabel']}: ${item.message || t['emptyHistory']}\nDate: ${this.formatDate(item.timestamp, true)}`);
+            }
+
+            // ক্যারেক্টার কাউন্ট
+            updateCharCount(count) {
+                document.getElementById('charCount').textContent = count;
+            }
+
+            // তারিখ ফরম্যাট
+            formatDate(dateString, showTime = false) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString(this.currentLanguage) + (showTime ? ' ' + date.toLocaleTimeString(this.currentLanguage) : '');
+            }
+
+            // এরর মেসেজ
+            showError(message) {
+                this.showToast(message, 'error');
+            }
+
+            // টোস্ট মেসেজ
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 3000);
+            }
+
+            // Scroll to top functionality
+            setupScrollToTop() {
+                window.addEventListener('scroll', () => {
+                    const fab = document.querySelector('.fab');
+                    if (window.scrollY > 300) {
+                        fab.style.display = 'flex';
+                    } else {
+                        fab.style.display = 'none';
+                    }
+                });
+            }
+
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            // Translate text helper
+            translateText(text, lang) {
+                // This is a simplified version - in a real app you'd have a proper translation system
+                return text;
+            }
+
+            // Local Storage
+            loadHistory() {
+                try {
+                    return JSON.parse(localStorage.getItem('whatsappHistory')) || [];
+                } catch {
+                    return [];
+                }
+            }
+
+            saveHistory() {
+                localStorage.setItem('whatsappHistory', JSON.stringify(this.history));
+            }
+        }
+
+        // App শুরু
+        const app = new WhatsAppOpener();
+
+        // Modal বাইরে ক্লিক করলে বন্ধ হওয়া
+        document.getElementById('helpModal').addEventListener('click', (e) => {
+            if (e.target.id === 'helpModal') {
+                app.closeModal('helpModal');
+            }
+        });
+    </script>
+</body>
+</html>
